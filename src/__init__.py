@@ -21,7 +21,8 @@ def create_app():
 
     @app.route('/')
     def home():
-        return render_template('items.html',title='Title passed as arg')
+        return "Hello World"
+        # return render_template('items.html',title='Title passed as arg')
     
     @app.route('/items', methods=['GET','POST'])
     def list_items():
@@ -33,7 +34,11 @@ def create_app():
                         )
                 print(f"Valid Category: {category_input}")
                 # items.append(request.form['item'])
-                session['items'].append(request.form['item'])
+                if 'items' in session:
+                    session['items'].append(request.form['item'])
+                else:
+                    session['items'] = items + [request.form['item']]
+
             except ValidationError as e:
                 print(e)
             # items.append(request.form)

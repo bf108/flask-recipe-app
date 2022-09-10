@@ -11,9 +11,18 @@
     <br>
     <input type="submit">
 </form>
+{% if 'items' in session %}
 <ol>
     {% for item in session['items']%}
     <li>{{item}}</li>
     {% endfor %}
 </ol>
+{% else %}
+<ol>
+    {% for item in items %}
+    <li>{{item}}</li>
+    {% endfor %}
+</ol>
+{% endif %}
+
 {% endblock %}
