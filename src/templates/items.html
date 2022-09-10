@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Add New Item</h1>
+<form method="post">
+    <label for="item">Item: <em>(required)</em></label>
+    <!-- Add required property to the form fields -->
+    <input type="text" id="item" name="item" required />
+    <br>
+    <label for="category">Food Category:</label>
+    <input type="text" id="category" name="category" />
+    <br>
+    <input type="submit">
+</form>
+<ol>
+    {% for item in session['items']%}
+    <li>{{item}}</li>
+    {% endfor %}
+</ol>
+{% endblock %}
