@@ -1,4 +1,5 @@
 import pytest
+from pydantic import ValidationError
 from src import ItemModel
 
 class TestItemValidation:
@@ -25,3 +26,23 @@ class TestItemValidation:
             test_bad_item = ItemModel(
                 item='Cheese',
                 category='Poultry')
+    
+    def test_missing_item(self):
+        """
+        GIVEN a helper class to validate item input
+        WHEN invalid data (missing/empty item) passed in
+        THEN check validation raises ValidationError 
+        """
+        with pytest.raises(ValidationError):
+            test_bad_item = ItemModel(
+                category='Poultry')
+    
+    def test_missing_category(self):
+        """
+        GIVEN a helper class to validate item input
+        WHEN invalid data (missing/empty category) passed in
+        THEN check validation raises ValidationError
+        """
+        with pytest.raises(ValidationError):
+            test_bad_item = ItemModel(
+                item='Bread')
