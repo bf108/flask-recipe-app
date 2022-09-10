@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, session
+from flask import Flask, render_template, request, session, flash
 from pydantic import BaseModel, validator, ValidationError
 
 items = ['Apples','Bananas','Carrots']
@@ -32,14 +32,14 @@ def create_app():
                         item=request.form['item'],
                         category=request.form['category']
                         )
-                print(f"Valid Category: {category_input}")
-                # items.append(request.form['item'])
                 if 'items' in session:
                     session['items'].append(request.form['item'])
                 else:
                     session['items'] = items + [request.form['item']]
-
+                flash(f"{request.form['item']} added to ingredient list!", 'Success')
+                return render_template('items.html',items=items, categories=categories)
             except ValidationError as e:
+                flash(f"Ingredient not valid: {e}", "error")
                 print(e)
             # items.append(request.form)
         return render_template('items.html',items=items, categories=categories)

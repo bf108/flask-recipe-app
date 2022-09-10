@@ -1,16 +1,44 @@
 {% extends "base.html" %}
+
+{% block styling %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/form_styles.css') }}">
+{% endblock %}
+
+
 {% block content %}
-<h1>Add New Item</h1>
-<form method="post">
-    <label for="item">Item: <em>(required)</em></label>
-    <!-- Add required property to the form fields -->
-    <input type="text" id="item" name="item" required />
-    <br>
-    <label for="category">Food Category:</label>
-    <input type="text" id="category" name="category" />
-    <br>
-    <input type="submit">
-</form>
+<div class="container">
+    <header class="content-text">
+        <h1>Welcome to the Recipe App</h1>
+        <p>Add any missing items</p>
+    </header>
+    <figure class="content-image">
+        <img src="{{ url_for('static', filename='img/food.jpeg') }}" alt="various foods">
+    </figure>
+</div>
+
+<div class="form-wrap">
+    <h1>
+        Add a new item:
+    </h1>
+    <form method="post">
+        <div class="field">
+            <label for="item">Item: <em>(required)</em></label>
+            <!-- Add required property to the form fields -->
+            <input type="text" id="item" name="item" required>
+        </div>
+
+        <div class="field">
+            <label for="category">Food Category: <em>(required)</em></label>
+            <input type="text" id="category" name="category" />
+        </div>
+
+        <div class="field">
+            <button type="submit">Submit</button>
+        </div>
+    </form>
+</div>
+
 {% if 'items' in session %}
 <ol>
     {% for item in session['items']%}
@@ -23,6 +51,8 @@
     <li>{{item}}</li>
     {% endfor %}
 </ol>
+</div>
+
 {% endif %}
 
 {% endblock %}
