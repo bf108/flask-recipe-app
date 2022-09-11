@@ -11,6 +11,7 @@ file_handler.setLevel(logging.INFO)
 
 items = ['Apples','Bananas','Carrots']
 categories = ['Dairy','Vegetables','Fruit','Grains','Alcohol','Baking','Bakery']
+categories_drop_down = [(i,c) for i, c in enumerate(categories)]
 
 class ItemModel(BaseModel):
     "Class for parsing new items in item form"
@@ -37,6 +38,7 @@ def create_app():
     @app.route('/items', methods=['GET','POST'])
     def list_items():
         if request.method == 'POST':
+            print(request.form)
             try:
                 category_input = ItemModel(
                         item=request.form['item'],
@@ -47,10 +49,10 @@ def create_app():
                 else:
                     session['items'] = items + [request.form['item']]
                 flash(f"{request.form['item']} added to ingredient list!", 'Success')
-                return render_template('items.html',items=items, categories=categories)
+                return render_template('items.html',items=items, categories=categories, categories_drop_down=categories_drop_down)
             except ValidationError as e:
                 flash(f"Ingredient not valid: {e}", "error")
                 app.logger.info(f"User tried to input item with category: {request.form['category']}")
-        return render_template('items.html',items=items, categories=categories)
+        return render_template('items.html',items=items, categories=categories, categories_drop_down=categories_drop_down)
 
     return app

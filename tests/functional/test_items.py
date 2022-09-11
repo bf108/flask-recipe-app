@@ -23,8 +23,8 @@ def test_item_page():
         response = client.get('/items')
         assert response.status_code == 200
         assert b'Recipe App' in response.data
-        assert b'Add New Item' in response.data
-        assert b'Food Category:' in response.data
+        assert b'Add a new item' in response.data
+        assert b'Food Category: <em>(required)</em>' in response.data
         assert b'Item: <em>(required)</em>' in response.data
 
 def test_post_item_page():
@@ -40,9 +40,9 @@ def test_post_item_page():
                                 )
         assert response.status_code == 200
         assert b'Recipe App' in response.data
-        assert b'Add New Item' in response.data
+        assert b'Add a new item' in response.data
+        assert b'Mango' in response.data
         assert b'Food Category:' in response.data
         assert b'Item: <em>(required)</em>' in response.data
-        assert b'Mango' in response.data
 
 

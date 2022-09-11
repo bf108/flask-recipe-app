@@ -28,9 +28,19 @@
             <input type="text" id="item" name="item" required>
         </div>
 
-        <div class="field">
+        <!-- <div class="field">
             <label for="category">Food Category: <em>(required)</em></label>
             <input type="text" id="category" name="category" />
+        </div> -->
+
+        <div class="field">
+            <label for="category">Food Category: <em>(required)</em></label>
+            <select class="custom-select" name="category">
+                <!-- <option selected>Open this select menu</option> -->
+                {% for i, cat in categories_drop_down %}
+                <option value={{cat}} type="text" id="category" name="category">{{cat}}</option>
+                {% endfor %}
+            </select>
         </div>
 
         <div class="field">
