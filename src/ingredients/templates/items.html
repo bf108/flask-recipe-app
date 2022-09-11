@@ -49,20 +49,28 @@
     </form>
 </div>
 
-{% if 'items' in session %}
-<ol>
-    {% for item in session['items']%}
-    <li>{{item}}</li>
-    {% endfor %}
-</ol>
-{% else %}
-<ol>
-    {% for item in items %}
-    <li>{{item}}</li>
-    {% endfor %}
-</ol>
-</div>
+<br>
 
+<div class="card-deck">
+    {% if 'items' in session %}
+    {% for item in session['items']%}
+    <div class="card">
+        <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
+        <div class="card-body">
+            <h5 h5 class="card-title">{{item}}</h5>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    {% for item in items %}
+    <div class="card">
+        <img class="card-img-top" src="src/{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
+        <div class="card-body">
+            <h5 h5 class="card-title">{{item}}</h5>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 {% endif %}
 
 {% endblock %}
