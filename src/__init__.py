@@ -1,12 +1,15 @@
+import logging
 from flask import Flask, render_template, request, session, flash
 from pydantic import BaseModel, validator, ValidationError
-import logging
 
 ################################
 # Helper Functions
 ################################
 
 def configure_logging(app):
+    """
+    Define logging format and level in app
+    """
     file_handler = logging.FileHandler('flask_recipe_app.log')
     file_formatter = logging.Formatter(
         '%(asctime)s %(levelname)s: %(message)s [in %(filename)s:%(lineno)d]')  # NEW!
@@ -16,12 +19,22 @@ def configure_logging(app):
     app.logger.info('Recipe App is Starting...')
 
 def register_blueprints(app):
+    """
+    Register blueprints app
+    """
     from src.ingredients import ingredients_blueprint
     app.register_blueprint(ingredients_blueprint)
 
-def create_app():
+def create_app(config=None):
+    """
+    Creates an instance of a Flask Application
+    args:
+        config: str - Specify which config to use for applicatin. Dev, Prod, Test. Default: DevConfig
+    """
     app = Flask(__name__, template_folder='templates')
-    app.config.from_object('config.DevConfig')
+    if not config:
+        config = 'config.DevConfig'
+    app.config.from_object(config)
     configure_logging(app)
     register_blueprints(app)
 
