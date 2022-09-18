@@ -1,6 +1,6 @@
 import pytest
 from pydantic import ValidationError
-from src import ItemModel
+from src.ingredients.routes import ItemModel
 
 class TestItemValidation:
     def test_valid_item(self):

@@ -28,9 +28,19 @@
             <input type="text" id="item" name="item" required>
         </div>
 
-        <div class="field">
+        <!-- <div class="field">
             <label for="category">Food Category: <em>(required)</em></label>
             <input type="text" id="category" name="category" />
+        </div> -->
+
+        <div class="field">
+            <label for="category">Food Category: <em>(required)</em></label>
+            <select class="custom-select" name="category">
+                <!-- <option selected>Open this select menu</option> -->
+                {% for i, cat in categories_drop_down %}
+                <option value={{cat}} type="text" id="category" name="category">{{cat}}</option>
+                {% endfor %}
+            </select>
         </div>
 
         <div class="field">
@@ -39,20 +49,28 @@
     </form>
 </div>
 
-{% if 'items' in session %}
-<ol>
-    {% for item in session['items']%}
-    <li>{{item}}</li>
-    {% endfor %}
-</ol>
-{% else %}
-<ol>
-    {% for item in items %}
-    <li>{{item}}</li>
-    {% endfor %}
-</ol>
-</div>
+<br>
 
+<div class="card-deck">
+    {% if 'items' in session %}
+    {% for item in session['items']%}
+    <div class="card">
+        <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
+        <div class="card-body">
+            <h5 h5 class="card-title">{{item}}</h5>
+        </div>
+    </div>
+    {% endfor %}
+    {% else %}
+    {% for item in items %}
+    <div class="card">
+        <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
+        <div class="card-body">
+            <h5 h5 class="card-title">{{item}}</h5>
+        </div>
+    </div>
+    {% endfor %}
+</div>
 {% endif %}
 
 {% endblock %}

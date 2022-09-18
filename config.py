@@ -13,7 +13,6 @@ class Config:
     # PORT = 5002
     # FLASK_APP = 'runner.py'
 
-
 class ProdConfig(Config):
     FLASK_ENV = 'production'
     DEBUG = False
@@ -26,3 +25,6 @@ class DevConfig(Config):
     DEBUG = True
     TESTING = True
     DATABASE_URI = environ.get('DEV_DATABASE_URI')
+
+class TestConfig(Config):
+    TESTING = True
