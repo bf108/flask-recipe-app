@@ -25,6 +25,11 @@ def register_blueprints(app):
     from src.ingredients import ingredients_blueprint
     app.register_blueprint(ingredients_blueprint)
 
+def register_error_pages(app):
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template('404.html'), 404
+
 def create_app(config=None):
     """
     Creates an instance of a Flask Application
@@ -37,5 +42,5 @@ def create_app(config=None):
     app.config.from_object(config)
     configure_logging(app)
     register_blueprints(app)
-
+    register_error_pages(app)
     return app
