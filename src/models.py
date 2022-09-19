@@ -1,5 +1,27 @@
 from src import database
 
+class Category(database.Model):
+    """
+    Class that represents an ingredient category e.g Dairy
+
+    This stores the following attributes
+        category: (type: string)
+    """
+    #prevents default naming assumed from Class (model) name
+    
+    __tablename__ = 'categories'
+
+    id = database.Column(database.Integer, primary_key=True)
+    category = database.Column(database.String, nullable=False)
+    #Provide the one to many link between Category and Ingredient
+    ingredients = database.relationship('Ingredient', backref='category', lazy='dynamic')
+
+    def __init__(self, category: str):
+        self.category = category
+    
+    def __repr__(self):
+        return f"Category - {self.category}"
+
 class Ingredient(database.Model):
     """
     Class that represents an ingredient
@@ -13,11 +35,15 @@ class Ingredient(database.Model):
 
     id = database.Column(database.Integer, primary_key=True)
     name = database.Column(database.String, nullable=False)
-    category = database.Column(database.String, nullable=False)
+    # category = database.Column(database.String, nullable=False)
+    category_id = database.Column(database.Integer, database.ForeignKey('categories.id'))
 
-    def __init__(self, name: str, category: str):
+    def __init__(self, name: str, category_id: int):
         self.name = name
-        self.category = category
+        # self.category = category
+        self.category_id = category_id
     
     def __repr__(self):
-        return f"{self.name}: Category - {self.category}"
+        return f"{self.name}"
+        # return f"{self.name}: Category - {self.category}"
+

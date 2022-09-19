@@ -64,6 +64,7 @@ def create_app(config=None):
     if not config:
         config = 'config.DevConfig'
     app.config.from_object(config)
+    
     initialize_extensions(app)
     configure_logging(app)
     register_blueprints(app)
