@@ -1,3 +1,6 @@
+import re
+import string
+from typing import List, Optional
 from flask import request, render_template, session, flash, current_app
 from pydantic import BaseModel, validator, ValidationError
 from src.models import Ingredient, Category
@@ -14,38 +17,59 @@ categories_drop_down = [(i,c) for i, c in enumerate(categories)]
 ################################
 # Helper Class to Validate New Items
 ################################
+def find_stems(some_ingredient: str) -> List[str]:
+    """
+    Find stems of word and return list of lowercase stems 
+    """
+    stems = [some_ingredient]
+    if some_ingredient.endswith('oes'):
+        stems.append(some_ingredient[:-2])
+    elif some_ingredient.endswith('s'):
+        stems.append(some_ingredient[:-1])
+    else:
+        stems.append(f"{some_ingredient}s")
+    return sorted([s.lower() for s in stems])
+
 class ItemModel(BaseModel):
     "Class for parsing new items in item form"
+    existing_items: List[str]
     item: str
     category: str
-
-    @validator('category')
-    def category_check(cls, value):
-        if value not in categories:
-            raise ValueError(f"Category not in {', '.join(categories)}")
+        
+    #Convert SQLAlchemy query list strings to lowercase string
+    @validator('existing_items')
+    def normalize_existing_items(cls, value):
+        return [v.lower() for v in value]
+    
+    #Check for digits in item
+    @validator('item')
+    def item_check_digit(cls, value):
+        if re.search('\d',value):
+            raise ValueError("Ingredient should be text only")
         return value
-
-def check_duplicate_ingredient(new_input_ingredient):
-    """
-    Check for ingredient in db before adding case insensitive search.
-    Will also perform regex search for similar ingredients
-    e.g Orange vs Oranges
-    """
-    #Check ingredient is singular:
-    alt_input = new_input_ingredient
-    if new_input_ingredient.endswith('oes'):
-        alt_input = new_input_ingredient[:-2]
-    elif new_input_ingredient.endswith('s'):
-        alt_input = new_input_ingredient[:-1]
-
-    base_check = Ingredient.query.filter(Ingredient.name.like(f'{new_input_ingredient}%')).all()
-    alt_check = Ingredient.query.filter(Ingredient.name.like(f'{alt_input}%')).all()
-    similar_ingredients = list(set(base_check + alt_check))
-    for si in similar_ingredients:
-        if si.name.lower() in [v.lower() for v in [new_input_ingredient, alt_input]]:
-            return (True, si.name)
-    return (False, None)
-
+    
+    #Check for punctuation in item: ONLY allow hyphen "-"
+    @validator('item')
+    def item_check_punctuation(cls, value):
+        punc_str = "".join(string.punctuation.split('-'))
+        if re.search(f'[{punc_str}]',value):
+            raise ValueError("Ingredient should be text only")
+        return value
+    
+    #Format new ingredient correctly
+    @validator('item')
+    def normalize_existing_item(cls, value):
+        return value.strip().title()
+    
+    #Check for duplicate ingredient
+    @validator('item')
+    def item_check_duplicate(cls, value, values, **kwargs):
+        stems_to_check = find_stems(value)
+        print(stems_to_check)
+        for item in values.get('existing_items',[]):
+            if item in stems_to_check:
+                raise ValueError(f"Ingredient already exists: {item}")
+        return value
 
 def check_category_duplicate(new_input_category):
     """
@@ -88,16 +112,12 @@ def home():
 @ingredients_blueprint.route('/items', methods=["GET",'POST'])
 def list_items():
     if request.method == 'POST':
-        duplicated, ing = check_duplicate_ingredient(request.form['item'])
-        if duplicated:
-            flash(f"Potential Duplicate with: {ing}", 'error')
-            ingredient_list, category_list, categories_drop_down = get_ingredient_category_tuple()
-            return render_template('items.html',
-                        items=ingredient_list,
-                        categories=category_list,
-                        categories_drop_down=categories_drop_down)
-        else:
-            new_ingredient = Ingredient(request.form['item'], request.form['category'])
+        current_list_ingredients = [ing.name for ing in get_list_ingredients()]
+        try:
+            new_item_data = ItemModel(existing_items = current_list_ingredients,
+                                      item = request.form['item'],
+                                      category = request.form['category'])
+            new_ingredient = Ingredient(new_item_data.item, new_item_data.category)
             database.session.add(new_ingredient)
             database.session.commit()
             flash(f"{new_ingredient.name} added to ingredient list in DB!", 'Success')
@@ -107,6 +127,8 @@ def list_items():
                                     items=ingredient_list,
                                     categories=categories,
                                     categories_drop_down=categories_drop_down)
+        except ValidationError as e:
+            flash(str(e).split('ItemModel\nitem\n')[1].split('(type=value_error)')[0], 'error')
     ingredient_list, category_list, categories_drop_down = get_ingredient_category_tuple()
     return render_template('items.html',
                             items=ingredient_list,
