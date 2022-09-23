@@ -1,6 +1,6 @@
 import pytest
 from pydantic import ValidationError
-from src.ingredients.routes import ItemModel, find_stems
+from src.ingredients.routes import ItemModel, CategoryModel, find_stems
 
 def test_find_stems():
     """
@@ -13,6 +13,55 @@ def test_find_stems():
     assert find_stems('Potatoes') == sorted(['potato','potatoes'])
     assert find_stems('Grapes') == sorted(['grape','grapes'])
 
+class TestCategoryValidation:
+    def test_valid_category(self):
+        """
+        GIVEN a helper class to validate category input
+        WHEN valid data passed in
+        THEN check validation successful 
+        """
+        test_item = CategoryModel(
+                existing=[],
+                category='Dairy')
+
+        assert test_item.category == 'Dairy'
+    
+    def test_invalid_category_punc(self):
+        """
+        GIVEN a helper class to validate category input
+        WHEN invalid data passed in
+        THEN check validation not successful 
+        """
+
+        with pytest.raises(ValueError):
+            test_bad_item = CategoryModel(
+                existing=[],
+                category='Dairy!')
+
+    def test_invalid_category_digit(self):
+        """
+        GIVEN a helper class to validate category input
+        WHEN invalid data passed in
+        THEN check validation not successful 
+        """
+
+        with pytest.raises(ValueError):
+            test_bad_item = CategoryModel(
+                existing=[],
+                category='Dairy1')
+    
+    def test_invalid_category_duplicate(self):
+        """
+        GIVEN a helper class to validate category input
+        WHEN invalid data passed in
+        THEN check validation not successful 
+        """
+
+        with pytest.raises(ValueError):
+            test_bad_item = CategoryModel(
+                existing=['Dairy'],
+                category='Dairy')
+
 class TestItemValidation:
     def test_valid_item(self):
         """
@@ -21,7 +70,7 @@ class TestItemValidation:
         THEN check validation successful 
         """
         test_item = ItemModel(
-                existing_items=[],
+                existing=[],
                 item='Cheese',
                 category='Dairy')
 
@@ -35,7 +84,7 @@ class TestItemValidation:
         THEN check validation successful and correct format 
         """
         test_item = ItemModel(
-                existing_items=[],
+                existing=[],
                 item='EGGS',
                 category='Baking')
 
@@ -49,7 +98,7 @@ class TestItemValidation:
         THEN check validation successful and correct format 
         """
         test_item = ItemModel(
-                existing_items=[],
+                existing=[],
                 item='eggs',
                 category='Baking')
 
@@ -64,7 +113,7 @@ class TestItemValidation:
         """
         with pytest.raises(ValueError):
             test_bad_item = ItemModel(
-                existing_items=[],
+                existing=[],
                 item='Chee3e',
                 category='Dairy')
 
@@ -76,7 +125,7 @@ class TestItemValidation:
         """
         with pytest.raises(ValueError):
             test_bad_item = ItemModel(
-                existing_items=[],
+                existing=[],
                 item='Cheese!',
                 category='Dairy')
 
@@ -89,7 +138,7 @@ class TestItemValidation:
         with pytest.raises(ValidationError):
             test_bad_item = ItemModel(
                 category='Poultry',
-                existing_items=[])
+                existing=[])
     
     def test_missing_category(self):
         """
@@ -100,7 +149,7 @@ class TestItemValidation:
         with pytest.raises(ValidationError):
             test_bad_item = ItemModel(
                 item='Bread',
-                existing_items=[]
+                existing=[]
                 )
 
     def test_missing_existing_items(self):
@@ -125,7 +174,7 @@ class TestItemValidation:
             test_bad_item = ItemModel(
                 item='Bread',
                 category='Bakery',
-                existing_items = ['Bread']
+                existing = ['Bread']
                 )
 
     def test_plural_single_duplicate_item(self):
@@ -138,7 +187,7 @@ class TestItemValidation:
             test_bad_item = ItemModel(
                 item='Beans',
                 category='Bakery',
-                existing_items = ['Bean']
+                existing = ['Bean']
                 )
 
     def test_single_plural_duplicate_item(self):
@@ -151,5 +200,5 @@ class TestItemValidation:
             test_bad_item = ItemModel(
                 item='Banana',
                 category='Bakery',
-                existing_items = ['Bananas']
+                existing = ['Bananas']
                 )

@@ -49,7 +49,7 @@ def test_actual_duplicate_ingredient(test_client):
                                 data={'item':'Orange','category':'Fruit'})
     assert response.status_code == 200
     assert b'Recipe App' in response.data
-    assert b'Ingredient already exists: orange' in response.data
+    assert b'Already exists: orange' in response.data
 
 def test_actual_duplicate_ingredient_plural(test_client):
     """
@@ -61,7 +61,7 @@ def test_actual_duplicate_ingredient_plural(test_client):
                                 data={'item':'Oranges','category':'Fruit'})
     assert response.status_code == 200
     assert b'Recipe App' in response.data
-    assert b'Ingredient already exists: orange' in response.data
+    assert b'Already exists: orange' in response.data
 
 def test_actual_duplicate_ingredient_case_insensitive(test_client):
     """
@@ -73,13 +73,13 @@ def test_actual_duplicate_ingredient_case_insensitive(test_client):
                                 data={'item':'ORANGES','category':'Fruit'})
     assert response.status_code == 200
     assert b'Recipe App' in response.data
-    assert b'Ingredient already exists: orange' in response.data
+    assert b'Already exists: orange' in response.data
 
     response = test_client.post('/items',
                                 data={'item':'oranges','category':'Fruit'})
     assert response.status_code == 200
     assert b'Recipe App' in response.data
-    assert b'Ingredient already exists: orange' in response.data
+    assert b'Already exists: orange' in response.data
 
 #Test for non duplicate ingredient in DB Sushi Rice
 def test_ingredient_with_punctuation(test_client):
