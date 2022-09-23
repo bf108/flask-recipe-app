@@ -3,6 +3,7 @@ from flask import Flask, render_template, request, session, flash
 from pydantic import BaseModel, validator, ValidationError
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
+from flask_migrate import Migrate
 
 ################################
 # Configuration
@@ -17,6 +18,8 @@ convention = {
 }
 metadata = MetaData(naming_convention=convention)
 database = SQLAlchemy(metadata=metadata)
+#This is not attached to the Flask application yet
+db_migration = Migrate()
 
 
 ################################
@@ -28,7 +31,9 @@ def initialize_extensions(app):
     Since the application instance is now created, pass it to each Flask
     extension instance to bind it to the Flask application instance (app)
     """
+    #All Flask extensions need to be initialized here
     database.init_app(app)
+    db_migration.init_app(app, database, render_as_batch=True)
 
 def configure_logging(app):
     """
