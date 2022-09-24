@@ -6,13 +6,7 @@ from pydantic import BaseModel, validator, ValidationError
 from src.models import Ingredient, Category
 from src import database
 from . import ingredients_blueprint
-
-################################
-# Dummy items to show before DB is created
-################################
-items = ['Apples','Bananas','Carrots']
-categories = ['Dairy','Vegetables','Fruit','Grains','Alcohol','Baking','Bakery']
-categories_drop_down = [(i,c) for i, c in enumerate(categories)]
+import click
 
 ################################
 # Helper Functions for Form Validation
@@ -31,7 +25,7 @@ def find_stems(some_ingredient: str) -> List[str]:
     return sorted([s.lower() for s in stems])
 
 def normalize_existing_items(value: List[str]) -> List[str]:
-        return [v.lower() for v in value]
+    return [v.lower() for v in value]
 
 def validate_text_only(value: str) -> str:
     "Helper function to validate input text for no digits/punctuation"
@@ -98,6 +92,63 @@ def get_ingredient_category_tuple():
     return (ing_list, cat_list, cat_dd_list)
 
 ################################
+# CLI Commands
+# These commands will be accessible via: flask --app runner.py ingredients
+################################
+
+# Dummy items to show before DB is created
+food_groups = {'Dairy':['Milk','Butter','Single Cream','Double Cream','Cheddar Cheese'],
+    'Vegetables': ['Aubergine','Carrot','Courgette','Potato','Pepper','Leeks'],
+    'Fruit': ['Apples','Bananas'],
+    'Grains': ['Rice','Spaghetti','Gnocci'],
+    'Alcohol': ['Red Wine','White Wine','Beer'],
+    'Baking': ['Self Raising Flour','Plain Flour','Eggs','Baking Soda'],
+    'Bakery': ['Bread','Baguette','Pastry','Pain-au-chocolate'],
+    'Condiments': ['Salt','Pepper','Ketchup','Mayonaise'],
+    'Meat': ['Chicken Fillets','Beef Mince','Stewing Beef','Bacon'],
+    'Fish': ['Salmon','Tuna'],
+    'Shell Fish': ['Prawns','Lobster','Mussels'],
+    }
+
+@ingredients_blueprint.cli.command('create_default_categories_set')
+def create_default_category():
+    #Create default food category types
+    categories_ = [Category(k) for k in food_groups]
+    for c in categories_:
+        database.session.add(c)
+    database.session.commit()
+
+@ingredients_blueprint.cli.command('create_category')
+@click.argument('category')
+def create_cateogry(category):
+    #Create a new category from CLI
+    new_cateogry = Category(category)
+    database.session.add(new_cateogry)
+    database.session.commit()
+
+@ingredients_blueprint.cli.command('create_default_ingredient_set')
+def create_default_ingredients():
+    #Create default food ingredient types
+    # ingredients_ = [Ingredient(v, k) for k, v in food_groups.items()]
+    ingredients_ = []
+    for k, cat_ingredients in food_groups.items():
+        cat_id = Category.query.filter_by(category=k).first().id
+        for i in cat_ingredients:
+            ingredients_.append(Ingredient(name=i, category_id=cat_id))
+    for c in ingredients_:
+        database.session.add(c)
+    database.session.commit()
+
+@ingredients_blueprint.cli.command('create_ingredient')
+@click.argument('name')
+@click.argument('category_id')
+def create_ingredient(name, category_id):
+    #Create a new ingredient from CLI
+    new_ingredient = Ingredient(name, category_id)
+    database.session.add(new_ingredient)
+    database.session.commit()
+
+################################
 # Blueprints
 ################################
 @ingredients_blueprint.route('/')
@@ -120,7 +171,7 @@ def list_items():
             ingredient_list, category_list, categories_drop_down = get_ingredient_category_tuple()
             return render_template('items.html',
                                     items=ingredient_list,
-                                    categories=categories,
+                                    categories=category_list,
                                     categories_drop_down=categories_drop_down)
         except ValidationError as e:
             flash(str(e).split('item')[1].split('(type=value_error)')[0], 'error')
