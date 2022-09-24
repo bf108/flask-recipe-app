@@ -1,4 +1,5 @@
 from src import database
+from werkzeug.security import generate_password_hash, check_password_hash
 
 class Category(database.Model):
     """
@@ -47,3 +48,34 @@ class Ingredient(database.Model):
         return f"{self.name}"
         # return f"{self.name}: Category - {self.category}"
 
+class User(database.Model):
+    """
+    Class that represents a User
+
+    This stores the following attributes
+        name: (type: string)
+        hashed_password: (type: string)
+    """
+
+    __tablename__ = 'users'
+
+    #Specify schema
+    id = database.Column(database.Integer, primary_key=True)
+    name = database.Column(database.String, nullable=False, unique=True)
+    email = database.Column(database.String, nullable=False)
+    hashed_password = database.Column(database.String(128), nullable=False)
+
+    def __init__(self, name: str, email: str, password_plaintext: str):
+        self.name = name
+        self.email = email
+        self.hashed_password = self.hash_password(password_plaintext)
+    
+    def is_password_correct(self, test_password: str) -> bool:
+        return check_password_hash(self.hashed_password, self.hash_password(test_password))
+
+    @staticmethod
+    def hash_password(password_plaintext: str) -> str:
+        return generate_password_hash(password_plaintext)
+
+    def __repr__(self):
+        return f"{self.name}: Email: {self.email}"

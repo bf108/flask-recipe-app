@@ -1,7 +1,7 @@
 import pytest
 from flask import current_app
 from src import create_app
-from src.models import Category, Ingredient
+from src.models import Category, Ingredient, User
 from src import database as db
 
 @pytest.fixture(scope='module')
@@ -33,3 +33,8 @@ def new_category():
 def new_ingredient():
     new_ingredient = Ingredient('Orange', 1)
     return new_ingredient
+
+@pytest.fixture(scope='module')
+def new_user():
+    new_user = User('John Doe','johndoe@some_mail.com',  'FooBar123!')
+    return new_user
