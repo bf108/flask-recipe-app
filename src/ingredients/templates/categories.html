@@ -10,35 +10,23 @@
 <div class="container">
     <header class="content-text">
         <h1>Welcome to the Recipe App</h1>
-        <p>Add any missing items</p>
+        <p>Add new categories</p>
     </header>
     <figure class="content-image">
         <img src="{{ url_for('static', filename='img/food.jpeg') }}" alt="various foods">
-        <!-- <img src="https://serpapi.com/searches/632eba820574f5df4983cf8c/images/05109f1d08e78809ac8ac33e43ac30be36fe799ed67b01bb8b42b1203f73ed6e.jpeg"
-            alt="various foods"> -->
     </figure>
 </div>
 
 <div class="form-wrap">
     <h1>
-        Add a new item:
+        Add a new category:
     </h1>
     <form method="post">
         <div class="field">
-            <label for="item">Item: <em>(required)</em></label>
+            <label for="category_name">Category Type: <em>(required)</em></label>
             <!-- Add required property to the form fields -->
-            <input type="text" id="item" name="item" required>
+            <input type="text" id="category_name" name="category_name" required>
         </div>
-        <div class="field">
-            <label for="category">Food Category: <em>(required)</em></label>
-            <select class="custom-select" name="category">
-                <!-- <option selected>Open this select menu</option> -->
-                {% for i, cat in categories_drop_down %}
-                <option value={{i}} type="text" id="category" name="category">{{cat}}</option>
-                {% endfor %}
-            </select>
-        </div>
-
         <div class="field">
             <button type="submit">Submit</button>
         </div>
@@ -48,9 +36,9 @@
 <br>
 
 <div class="card-deck">
-    {% for item in items %}
+    {% for item in category_list %}
     <div class="card">
-        <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
+        <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Food Category Type">
         <div class="card-body">
             <h5 h5 class="card-title">{{item}}</h5>
         </div>
