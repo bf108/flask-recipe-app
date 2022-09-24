@@ -32,3 +32,8 @@ class DevConfig(Config):
 
 class TestConfig(Config):
     TESTING = True
+    #This allows you to run CRUD commands against a test db instead of prod or dev one
+    SQLALCHEMY_DATABASE_URI = os.getenv('TEST_DATABASE_URI',
+                                        default=f"sqlite:///{os.path.join(BASEDIR, 'instance', 'test.db')}")
+
+    

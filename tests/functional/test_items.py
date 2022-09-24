@@ -45,30 +45,23 @@ def test_actual_duplicate_ingredient(test_client):
     WHEN a duplicate ingredient is passed in
     THEN ckeck tuple returned to confirm duplicate and the value it is duplicate with
     """
+    #Insert items in test db to then check for duplicates
+    test_client.post('/items',
+                                data={'item':'Orange','category':'Fruit'})
     response = test_client.post('/items',
                                 data={'item':'Orange','category':'Fruit'})
     assert response.status_code == 200
     assert b'Recipe App' in response.data
     assert b'Already exists: orange' in response.data
-
-def test_actual_duplicate_ingredient_plural(test_client):
-    """
-    GIVEN a function to query db for dubplicates
-    WHEN a duplicate ingredient is passed in
-    THEN ckeck tuple returned to confirm duplicate and the value it is duplicate with
-    """
+    
+    #Duplicate plural
     response = test_client.post('/items',
                                 data={'item':'Oranges','category':'Fruit'})
     assert response.status_code == 200
     assert b'Recipe App' in response.data
     assert b'Already exists: orange' in response.data
 
-def test_actual_duplicate_ingredient_case_insensitive(test_client):
-    """
-    GIVEN a function to query db for dubplicates
-    WHEN a duplicate ingredient is passed in
-    THEN ckeck tuple returned to confirm duplicate and the value it is duplicate with
-    """
+    #Case insensitive
     response = test_client.post('/items',
                                 data={'item':'ORANGES','category':'Fruit'})
     assert response.status_code == 200
@@ -80,6 +73,7 @@ def test_actual_duplicate_ingredient_case_insensitive(test_client):
     assert response.status_code == 200
     assert b'Recipe App' in response.data
     assert b'Already exists: orange' in response.data
+
 
 #Test for non duplicate ingredient in DB Sushi Rice
 def test_ingredient_with_punctuation(test_client):
