@@ -61,8 +61,8 @@ class User(database.Model):
 
     #Specify schema
     id = database.Column(database.Integer, primary_key=True)
-    name = database.Column(database.String, nullable=False, unique=True)
-    email = database.Column(database.String, nullable=False)
+    name = database.Column(database.String, nullable=False)
+    email = database.Column(database.String, nullable=False, unique=True)
     hashed_password = database.Column(database.String(128), nullable=False)
 
     def __init__(self, name: str, email: str, password_plaintext: str):

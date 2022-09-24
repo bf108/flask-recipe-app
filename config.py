@@ -15,6 +15,7 @@ class Config:
     SQLALCHEMY_DATABASE_URI = os.getenv('DEV_DATABASE_URL',
                                         default=f"sqlite:///{os.path.join(BASEDIR, 'instance', 'app.db')}")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    WTF_CSRF_ENABLED = True
     # PORT = 5002
 
 class ProdConfig(Config):
@@ -32,6 +33,7 @@ class DevConfig(Config):
 
 class TestConfig(Config):
     TESTING = True
+    WTF_CSRF_ENABLED = False
     #This allows you to run CRUD commands against a test db instead of prod or dev one
     SQLALCHEMY_DATABASE_URI = os.getenv('TEST_DATABASE_URI',
                                         default=f"sqlite:///{os.path.join(BASEDIR, 'instance', 'test.db')}")

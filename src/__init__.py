@@ -52,7 +52,9 @@ def register_blueprints(app):
     Register blueprints app
     """
     from src.ingredients import ingredients_blueprint
+    from src.users import users_blueprint
     app.register_blueprint(ingredients_blueprint)
+    app.register_blueprint(users_blueprint)
 
 def register_error_pages(app):
     @app.errorhandler(404)
