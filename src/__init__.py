@@ -4,6 +4,7 @@ from pydantic import BaseModel, validator, ValidationError
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_migrate import Migrate
+from flask_wtf import CSRFProtect
 
 ################################
 # Configuration
@@ -20,6 +21,7 @@ metadata = MetaData(naming_convention=convention)
 database = SQLAlchemy(metadata=metadata)
 #This is not attached to the Flask application yet
 db_migration = Migrate()
+csrf_protection = CSRFProtect()
 
 
 ################################
@@ -34,6 +36,7 @@ def initialize_extensions(app):
     #All Flask extensions need to be initialized here
     database.init_app(app)
     db_migration.init_app(app, database, render_as_batch=True)
+    csrf_protection.init_app(app)
 
 def configure_logging(app):
     """
