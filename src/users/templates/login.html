@@ -6,7 +6,7 @@
 
 {% block content %}
 <div class="form-wrap">
-    <h1>User Registration</h1>
+    <h1>Login</h1>
 
     <form method="post">
         {{ form.csrf_token }}
@@ -27,9 +27,15 @@
             {% endfor %}
         </div>
 
+        <div class="field checkbox">
+            {{ form.remember_me.label }}
+            {{ form.remember_me() }}
+        </div>
+
         <div class="field">
-            <button type="submit">Register</button>
+            {{ form.submit() }}
         </div>
     </form>
 </div>
+
 {% endblock %}

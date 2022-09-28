@@ -5,6 +5,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import MetaData
 from flask_migrate import Migrate
 from flask_wtf import CSRFProtect
+from flask_login import LoginManager
 
 ################################
 # Configuration
@@ -22,6 +23,8 @@ database = SQLAlchemy(metadata=metadata)
 #This is not attached to the Flask application yet
 db_migration = Migrate()
 csrf_protection = CSRFProtect()
+login = LoginManager()
+login.login_view = 'users.login' #Specify the view on which login performed
 
 
 ################################
@@ -37,6 +40,15 @@ def initialize_extensions(app):
     database.init_app(app)
     db_migration.init_app(app, database, render_as_batch=True)
     csrf_protection.init_app(app)
+    login.init_app(app)
+
+    from src.models import User
+
+    @login.user_loader
+    def load_user(user_id):
+        return User.query.get(int(user_id))
+
+
 
 def configure_logging(app):
     """

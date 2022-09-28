@@ -61,21 +61,38 @@ class User(database.Model):
 
     #Specify schema
     id = database.Column(database.Integer, primary_key=True)
-    name = database.Column(database.String, nullable=False)
     email = database.Column(database.String, nullable=False, unique=True)
     hashed_password = database.Column(database.String(128), nullable=False)
 
-    def __init__(self, name: str, email: str, password_plaintext: str):
-        self.name = name
+    def __init__(self, email: str, password_plaintext: str):
         self.email = email
         self.hashed_password = self.hash_password(password_plaintext)
     
     def is_password_correct(self, test_password: str) -> bool:
-        return check_password_hash(self.hashed_password, self.hash_password(test_password))
+        return check_password_hash(self.hashed_password, test_password)
 
     @staticmethod
     def hash_password(password_plaintext: str) -> str:
         return generate_password_hash(password_plaintext)
 
     def __repr__(self):
-        return f"{self.name}: Email: {self.email}"
+        return f"Email: {self.email}"
+    
+    @property
+    def is_authenticated(self):
+        """Return True if the user has been successfully registered."""
+        return True
+
+    @property
+    def is_active(self):
+        """Always True, as all users are active."""
+        return True
+
+    @property
+    def is_anonymous(self):
+        """Always False, as anonymous users aren't supported."""
+        return False
+
+    def get_id(self):
+        """Return the user ID as a unicode string (`str`)."""
+        return str(self.id)

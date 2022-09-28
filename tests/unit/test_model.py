@@ -22,7 +22,6 @@ def test_user(new_user):
     WHEN a new User object is created
     THEN check attributes are correct: name, password
     """
-    assert new_user.name == 'John Doe'
     assert new_user.email == 'johndoe@some_mail.com'
     #Check that password has been hashed and therefore not the same
     assert new_user.hashed_password != 'FooBar123!'
