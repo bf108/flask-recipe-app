@@ -38,7 +38,6 @@ def test_post_item_page(test_client):
     assert b'Food Category:' in response.data
     assert b'Item: <em>(required)</em>' in response.data
 
-
 def test_actual_duplicate_ingredient(test_client):
     """
     GIVEN a function to query db for dubplicates
@@ -74,7 +73,6 @@ def test_actual_duplicate_ingredient(test_client):
     assert b'Recipe App' in response.data
     assert b'Already exists: orange' in response.data
 
-
 #Test for non duplicate ingredient in DB Sushi Rice
 def test_ingredient_with_punctuation(test_client):
     """
@@ -92,3 +90,4 @@ def test_ingredient_with_punctuation(test_client):
                                 data={'item':'Sushi16 Rice1','category':'Grains'})
     assert response.status_code == 200
     assert b'Ingredient should be text only' in response.data
+    

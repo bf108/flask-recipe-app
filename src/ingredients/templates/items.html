@@ -24,6 +24,7 @@
         Add a new item:
     </h1>
     <form method="post">
+        <input type="hidden" , name="csrf_token" value="{{ csrf_token }}">
         <div class="field">
             <label for="item">Item: <em>(required)</em></label>
             <!-- Add required property to the form fields -->
