@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% block styling %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/form_styles.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="form-wrap">
+    <h1>Create Recipes</h1>
+
+    <form method="post">
+        {{ form.csrf_token }}
+
+        <div class="field">
+            {{ form.title.label }}
+            {{ form.title }}
+            {% for error in form.title.errors %}
+            <p class="validation-error">[{{ error }}]</p>
+            {% endfor %}
+        </div>
+
+        <div class="field">
+            {{ form.method.label }}
+            {{ form.method }}
+            {% for error in form.method.errors %}
+            <p class="validation-error">[{{ error }}]</p>
+            {% endfor %}
+        </div>
+
+        <div class="field">
+            <button type="submit">Create Recipe</button>
+        </div>
+    </form>
+</div>
+
+<br>
+
+<div class="card-deck">
+    {% for recipe in recipes %}
+    <div class="card">
+        <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
+        <div class="card-body">
+            <h5 h5 class="card-title">{{recipe.title}}</h5>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% endblock %}

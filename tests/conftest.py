@@ -1,7 +1,7 @@
 import pytest
 from flask import current_app
 from src import create_app
-from src.models import Category, Ingredient, User
+from src.models import Category, Ingredient, User, Recipe
 from src import database as db
 
 @pytest.fixture(scope='module')
@@ -38,6 +38,11 @@ def new_ingredient():
 def new_user():
     new_user = User('johndoe@some_mail.com',  'FooBar123!')
     return new_user
+
+@pytest.fixture(scope='module')
+def new_recipe():
+    new_recipe_item = Recipe('Beans on Toast',  'Make it')
+    return new_recipe_item
 
 #This fixture is used for registered user e.g login, logout
 @pytest.fixture(scope='module')

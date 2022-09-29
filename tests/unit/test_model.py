@@ -25,3 +25,13 @@ def test_user(new_user):
     assert new_user.email == 'johndoe@some_mail.com'
     #Check that password has been hashed and therefore not the same
     assert new_user.hashed_password != 'FooBar123!'
+
+def test_new_recipe(new_recipe):
+    """
+    GIVEN a Recipe Model
+    WHEN a new Recipe object is created
+    THEN check attributes are correct: title, method
+    """
+    assert new_recipe.title == 'Beans on Toast'
+    #Check that password has been hashed and therefore not the same
+    assert new_recipe.method == 'Make it'

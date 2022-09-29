@@ -48,6 +48,30 @@ class Ingredient(database.Model):
         return f"{self.name}"
         # return f"{self.name}: Category - {self.category}"
 
+class Recipe(database.Model):
+    """
+    Class that represents a recipe
+
+    This stores the following attributes
+        name: (type: string)
+        method: (type: Text)
+    """
+
+    __tablename__ = 'recipes'
+
+    id = database.Column(database.Integer, primary_key=True)
+    title = database.Column(database.String, nullable=False, unique=True)
+    method = database.Column(database.Text, nullable=False, default='Just make it!')
+    #One to Many relationship between recipe and rows in the IngredientRecipe Table
+    # ingredient_recipe = database.relationship('IngredientRecipe', backref='recipe', lazy='dynamic')
+
+    def __init__(self, title: str, method: str):
+        self.title = title
+        self.method = method
+    
+    def __repr__(self):
+        return f"{self.title}"
+
 class User(database.Model):
     """
     Class that represents a User
