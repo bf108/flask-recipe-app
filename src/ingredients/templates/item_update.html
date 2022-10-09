@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+
+{% block styling %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/form_styles.css') }}">
+{% endblock %}
+
+
+{% block content %}
+<div class="form-wrap">
+    <h1>
+        Update {{item.name}}:
+    </h1>
+    <form method="post">
+        <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
+        <div class="field">
+            <label for="item">Item: <em>(required)</em></label>
+            <!-- Add required property to the form fields -->
+            <input type="text" id="item" name="item" value="{{item.name}}" required>
+        </div>
+        <div class="field">
+            <label for="category">Food Category: <em>(required)</em></label>
+            <select class="custom-select" name="category">
+                <!-- <option selected>Open this select menu</option> -->
+                {% for i, cat in categories_drop_down %}
+                <option value={{i}} type="text" id="category" name="category">{{cat}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="field">
+            <button type="submit">Submit</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}

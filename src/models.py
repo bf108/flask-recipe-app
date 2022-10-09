@@ -1,43 +1,43 @@
-from src import database
+from src import database as db
 from werkzeug.security import generate_password_hash, check_password_hash
 
-class Category(database.Model):
+class Category(db.Model):
     """
     Class that represents an ingredient category e.g Dairy
-
     This stores the following attributes
         category: (type: string)
     """
     #prevents default naming assumed from Class (model) name
-    
     __tablename__ = 'categories'
 
-    id = database.Column(database.Integer, primary_key=True)
-    category = database.Column(database.String, nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    category = db.Column(db.String, nullable=False)
     #Provide the one to many link between Category and Ingredient
-    ingredients = database.relationship('Ingredient', backref='category', lazy='dynamic')
+    # ingredients = db.relationship('Ingredient', backref='category', lazy='dynamic', passive_deletes=True)
+    ingredients = db.relationship('Ingredient',lazy='dynamic', back_populates="category",cascade='all, delete')
 
     def __init__(self, category: str):
         self.category = category
     
     def __repr__(self):
-        return f"Category - {self.category}"
+        return f"{self.category.title()}"
 
-class Ingredient(database.Model):
+class Ingredient(db.Model):
     """
     Class that represents an ingredient
-
     This stores the following attributes
         name: (type: string)
         category: (type: string)
     """
-
     __tablename__ = 'ingredients'
 
-    id = database.Column(database.Integer, primary_key=True)
-    name = database.Column(database.String, nullable=False)
-    # category = database.Column(database.String, nullable=False)
-    category_id = database.Column(database.Integer, database.ForeignKey('categories.id'))
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String, nullable=False, unique=True)
+    # category = db.Column(db.String, nullable=False)
+    # category_id = db.Column(db.Integer, db.ForeignKey('categories.id', back_populates="owner", ondelete='all, delete, delete-orphan'), nullable=False)
+    category_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete="CASCADE"), nullable=False)
+    category = db.relationship('Category',back_populates='ingredients', passive_deletes=True)
+    ing_recipe = db.relationship("IngredientRecipe", lazy='dynamic', back_populates='ingredients', cascade='all, delete')
 
     def __init__(self, name: str, category_id: int):
         self.name = name
@@ -45,10 +45,65 @@ class Ingredient(database.Model):
         self.category_id = category_id
     
     def __repr__(self):
-        return f"{self.name}"
-        # return f"{self.name}: Category - {self.category}"
+        return f"{self.name.title()}"
 
-class User(database.Model):
+class Recipe(db.Model):
+    """
+    Class that represents a recipe
+
+    This stores the following attributes
+        name: (type: string)
+        method: (type: Text)
+    """
+
+    __tablename__ = 'recipes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String, nullable=False, unique=True)
+    method = db.Column(db.Text, nullable=False, default='Just make it!')
+    ing_recipe = db.relationship("IngredientRecipe", backref='recipe', lazy=True, passive_deletes=True)
+    #One to Many relationship between recipe and rows in the IngredientRecipe Table
+    # ingredient_recipe = db.relationship('IngredientRecipe', backref='recipe', lazy='dynamic')
+
+    def __init__(self, title: str, method: str):
+        self.title = title
+        self.method = method
+    
+    def __repr__(self):
+        return f"{self.title}"
+
+class IngredientRecipe(db.Model):
+    """
+    Class that represents the IngredienRecipe table. 
+    Each row represents an ingredient linked to a recipe
+
+    This stores the following attributes
+        recipe_id: (type: int)
+        ingredient_id: (type: int)
+        Quantity: (type: Float)
+        Unit: (type: string)
+    """
+
+    __tablename__ = 'ingredientrecipe'
+
+    id = db.Column(db.Integer, primary_key=True)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable=False)
+    ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredients.id', ondelete="CASCADE"), nullable=False)
+    ingredients = db.relationship('Ingredient', back_populates='ing_recipe', passive_deletes=True)
+    quantity = db.Column(db.Float, nullable=False)
+    unit = db.Column(db.String, nullable=False)
+    #One to Many relationship between recipe and rows in the IngredientRecipe Table
+
+    def __init__(self, recipe_id: int, ingredient_id: int, quantity: float, unit: str):
+        self.recipe_id = recipe_id
+        self.ingredient_id = ingredient_id
+        self.quantity = quantity
+        self.unit = unit
+    
+    def __repr__(self):
+        return f"Recipe: {self.recipe_id} Ingredient: {self.ingredient_id} Qty: {self.quantity}{self.unit}"
+
+class User(db.Model):
     """
     Class that represents a User
 
@@ -60,9 +115,9 @@ class User(database.Model):
     __tablename__ = 'users'
 
     #Specify schema
-    id = database.Column(database.Integer, primary_key=True)
-    email = database.Column(database.String, nullable=False, unique=True)
-    hashed_password = database.Column(database.String(128), nullable=False)
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String, nullable=False, unique=True)
+    hashed_password = db.Column(db.String(128), nullable=False)
 
     def __init__(self, email: str, password_plaintext: str):
         self.email = email

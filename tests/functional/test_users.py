@@ -163,3 +163,50 @@ def test_logout_when_not_logged_in(test_client):
     # assert b'Method Not Allowed' in response.data
     assert b'Please log in to access this page.' in response.data
 
+def test_get_recipes_page(test_client):
+    """
+    GIVEN a flask test application
+    WHEN GET request made to the '/recipes' route
+    THEN check the page formatted correctly
+    """
+    response = test_client.get('/recipes')
+    assert response.status_code == 200
+    assert b'Title' in response.data
+    assert b'Method' in response.data
+    assert b'Create Recipes' in response.data
+    assert b'Create Recipe' in response.data
+
+def test_create_recipes_nominal(test_client):
+    """
+    GIVEN a flask test application
+    WHEN POST request made to the '/recipes' route 
+    THEN check the page formatted correctly
+    """
+    response = test_client.post('/recipes', 
+                        data={'title':'Beans on Toast','Method':'Make it'},
+                        follow_redirects=True)
+    assert response.status_code == 200
+    assert b'Added Beans on Toast' in response.data
+    assert b'Title' in response.data
+    assert b'Method' in response.data
+    assert b'Create Recipes' in response.data
+    assert b'Create Recipe' in response.data
+
+def test_create_recipes_off_nominal(test_client):
+    """
+    GIVEN a flask test application
+    WHEN POST request made to the '/recipes' route with duplicate recipe
+    THEN check the page formatted correctly
+    """
+    response = test_client.post('/recipes', 
+                        data={'title':'Beans on Toast','Method':'Make it'})
+
+    response = test_client.post('/recipes', 
+                        data={'title':'Beans on Toast','Method':'Make it'},
+                        follow_redirects=True)
+    assert response.status_code == 200
+    assert b'Error creating recipe' in response.data
+    assert b'Title' in response.data
+    assert b'Method' in response.data
+    assert b'Create Recipes' in response.data
+    assert b'Create Recipe' in response.data

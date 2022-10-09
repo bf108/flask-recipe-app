@@ -24,7 +24,7 @@
         Add a new item:
     </h1>
     <form method="post">
-        <input type="hidden" , name="csrf_token" value="{{ csrf_token }}">
+        <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
         <div class="field">
             <label for="item">Item: <em>(required)</em></label>
             <!-- Add required property to the form fields -->
@@ -35,7 +35,7 @@
             <select class="custom-select" name="category">
                 <!-- <option selected>Open this select menu</option> -->
                 {% for i, cat in categories_drop_down %}
-                <option value={{i}} type="text" id="category" name="category">{{cat}}</option>
+                <option value={{i}} type="text" id="category" name="category" required>{{cat}}</option>
                 {% endfor %}
             </select>
         </div>
@@ -54,9 +54,19 @@
         <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
         <div class="card-body">
             <h5 h5 class="card-title">{{item}}</h5>
+            <button type="button" onclick="confirmDelete( '{{ item }}', '{{ item.id }}' )"
+                class="btn btn-danger btn-sm">Delete</button>
         </div>
     </div>
     {% endfor %}
 </div>
+<script>
+    const confirmDelete = function (title, id) {
+        var check = confirm(`Are you sure you want to delete ${title}`)
+        if (check) {
+            window.location.href = `/items/delete/${id}`
+        }
+    }
+</script>
 
 {% endblock %}
