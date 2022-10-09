@@ -5,7 +5,7 @@ def test_category(new_category):
     WHEN a new Category object is created
     THEN check attributes are correct: category
     """
-    assert new_category.category == 'Fruit'
+    assert new_category.category == 'fruit'
 
 def test_ingredient(new_ingredient):
     """
@@ -13,7 +13,7 @@ def test_ingredient(new_ingredient):
     WHEN a new Ingredient object is created
     THEN check attributes are correct: name, category_id
     """
-    assert new_ingredient.name == 'Orange'
+    assert new_ingredient.name == 'orange'
     assert new_ingredient.category_id == 1
 
 def test_user(new_user):

@@ -1,7 +1,7 @@
 import re
 import string
 from typing import List, Optional, Dict, Union
-from flask import request, render_template, session, flash, current_app
+from flask import request, render_template, session, flash, current_app, redirect, url_for
 from pydantic import BaseModel, validator, ValidationError
 from src.models import Ingredient, Category
 from src import database
@@ -32,7 +32,7 @@ def validate_text_only(value: str) -> str:
     punc_str = "".join(string.punctuation.split('-'))
     if re.search('\d',value) or re.search(f'[{punc_str}]',value):
         raise ValueError("Ingredient should be text only")
-    return value.strip().title()
+    return value.strip().lower()
 
 def check_for_duplicate(value: str, values: Union[str, List]) -> str:
     stems_to_check = find_stems(value)
@@ -97,14 +97,15 @@ def get_ingredient_category_tuple():
 ################################
 
 # Dummy items to show before DB is created
-food_groups = {'Dairy':['Milk','Butter','Single Cream','Double Cream','Cheddar Cheese'],
+food_groups = {'Dairy':['Milk','Butter','Single Cream','Double Cream', 'Yogurt'],
+    'Cheese': ['Cheddar', 'Halloumi', 'Feta', 'Gouda', 'Gruyer', 'Parmesan'],
     'Vegetables': ['Aubergine','Carrot','Courgette','Potato','Pepper','Leeks'],
     'Fruit': ['Apples','Bananas'],
     'Grains': ['Rice','Spaghetti','Gnocci'],
     'Alcohol': ['Red Wine','White Wine','Beer'],
     'Baking': ['Self Raising Flour','Plain Flour','Eggs','Baking Soda'],
-    'Bakery': ['Bread','Baguette','Pastry','Pain-au-chocolate'],
-    'Condiments': ['Salt','Pepper','Ketchup','Mayonaise'],
+    'Bakery': ['Bread','Baguette','Short Crust Pastry', 'Pain-au-chocolate'],
+    'Condiments': ['Salt','Black Pepper','Ketchup','Mayonaise'],
     'Meat': ['Chicken Fillets','Beef Mince','Stewing Beef','Bacon'],
     'Fish': ['Salmon','Tuna'],
     'Shell Fish': ['Prawns','Lobster','Mussels'],
@@ -161,8 +162,8 @@ def list_items():
         current_list_ingredients = [ing.name for ing in get_list_ingredients()]
         try:
             new_item_data = ItemModel(existing = current_list_ingredients,
-                                      item = request.form['item'],
-                                      category = request.form['category'])
+                                      item = request.form.get('item'),
+                                      category = request.form.get('category'))
             new_ingredient = Ingredient(new_item_data.item, new_item_data.category)
             database.session.add(new_ingredient)
             database.session.commit()
@@ -174,12 +175,53 @@ def list_items():
                                     categories=category_list,
                                     categories_drop_down=categories_drop_down)
         except ValidationError as e:
-            flash(str(e).split('item')[1].split('(type=value_error)')[0], 'error')
+            if not request.form.get('category'):
+                flash('Category required','error')
+            else:
+                flash(str(e).split('item')[1].split('(type=value_error)')[0], 'error')
     ingredient_list, category_list, categories_drop_down = get_ingredient_category_tuple()
     return render_template('items.html',
                             items=ingredient_list,
                             categories=category_list, 
                             categories_drop_down=categories_drop_down)
+
+@ingredients_blueprint.route('/items/update/<int:id>', methods=["GET",'POST'])
+def update_item(id):
+
+    #Need to resolve conflicts with duplicats when updating
+    #Need to ensure that all ingredients are stored in lowercase
+
+    ing_to_update = Ingredient.query.filter_by(id=id).first_or_404()
+    original_item = ing_to_update.name
+    original_cat = ing_to_update.category
+    original_cat_id = ing_to_update.category.id
+    if request.method == 'POST':
+        #Remove current ingredient to prevent duplicate alert
+        current_list_ingredients = [ing.name for ing in get_list_ingredients() if ing.name != original_item]
+        try:
+            new_item_data = ItemModel(existing = current_list_ingredients,
+                                      item = request.form['item'],
+                                      category = request.form['category'])
+            ing_to_update.name = new_item_data.item 
+            ing_to_update.category_id = new_item_data.category
+            database.session.commit()
+            flash(f'Updated {original_item} {original_cat} to {ing_to_update}')
+            return redirect(url_for('ingredients.list_items'))
+        except ValidationError as e:
+            flash(str(e).split('item')[1].split('(type=value_error)')[0], 'error')
+    #Get categories for drop down
+    categories_drop_down = get_category_drop_list()
+    #Order so current Category selection is first
+    for tup in categories_drop_down:
+        if tup[0] == original_cat_id:
+            print('found match')
+            tmp_cat_tup = [tup]
+            categories_drop_down.remove(tup)
+    
+    modified_drop_down = tmp_cat_tup + categories_drop_down
+
+    return render_template('item_update.html', item=ing_to_update, categories_drop_down=modified_drop_down)
+
 
 @ingredients_blueprint.route('/categories', methods=['GET','POST'])
 def list_categories():
@@ -204,3 +246,19 @@ def list_categories():
     return render_template('categories.html', 
                             category_list=category_list,
                             categories_drop_down=categories_drop_down)
+
+@ingredients_blueprint.route('/categories/delete/<int:id>', methods=['GET'])
+def delete_category(id):
+    cat_to_delete = Category.query.filter_by(id=id).first_or_404()
+    database.session.delete(cat_to_delete)
+    database.session.commit()
+    flash(f'Deleted: {cat_to_delete.category}')
+    return redirect(url_for('ingredients.list_categories'))
+
+@ingredients_blueprint.route('/items/delete/<int:id>', methods=['GET'])
+def delete_item(id):
+    item_to_delete = Ingredient.query.filter_by(id=id).first_or_404()
+    database.session.delete(item_to_delete)
+    database.session.commit()
+    flash(f'Deleted: {item_to_delete.name}')
+    return redirect(url_for('ingredients.list_items'))
