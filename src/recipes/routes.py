@@ -91,7 +91,7 @@ def recipe_update(title, id):
         rec_ing_row.quantity = form.quantity.data
         rec_ing_row.unit = form.unit.data
         db.session.commit()
-        flash(f'Updated {rec_ing_row.ingredient} in {rec_ing_row.recipe} to {rec_ing_row.quantity}{rec_ing_row.unit}','success')
+        flash(f'Updated {rec_ing_row.ingredient_id} in {rec_ing_row.recipe_id} to {rec_ing_row.quantity}{rec_ing_row.unit}','success')
         return redirect(url_for('recipes.recipe_detail',title=title))
     return render_template('recipe_update.html', recipe_ing=rec_ing_row, title=title, id=id, form=form)
 

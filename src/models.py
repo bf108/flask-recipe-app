@@ -12,8 +12,6 @@ class Category(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String, nullable=False)
-    #Provide the one to many link between Category and Ingredient
-    # ingredients = db.relationship('Ingredient', backref='category', lazy='dynamic', passive_deletes=True)
     ingredients = db.relationship('Ingredient',lazy='dynamic', back_populates="category",cascade='all, delete')
 
     def __init__(self, category: str):
@@ -33,8 +31,6 @@ class Ingredient(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False, unique=True)
-    # category = db.Column(db.String, nullable=False)
-    # category_id = db.Column(db.Integer, db.ForeignKey('categories.id', back_populates="owner", ondelete='all, delete, delete-orphan'), nullable=False)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete="CASCADE"), nullable=False)
     category = db.relationship('Category',back_populates='ingredients', passive_deletes=True)
     ing_recipe = db.relationship("IngredientRecipe", lazy='dynamic', back_populates='ingredients', cascade='all, delete')
@@ -62,8 +58,6 @@ class Recipe(db.Model):
     title = db.Column(db.String, nullable=False, unique=True)
     method = db.Column(db.Text, nullable=False, default='Just make it!')
     ing_recipe = db.relationship("IngredientRecipe", backref='recipe', lazy=True, passive_deletes=True)
-    #One to Many relationship between recipe and rows in the IngredientRecipe Table
-    # ingredient_recipe = db.relationship('IngredientRecipe', backref='recipe', lazy='dynamic')
 
     def __init__(self, title: str, method: str):
         self.title = title
@@ -102,6 +96,22 @@ class IngredientRecipe(db.Model):
     
     def __repr__(self):
         return f"Recipe: {self.recipe_id} Ingredient: {self.ingredient_id} Qty: {self.quantity}{self.unit}"
+
+class Basket(db.Model):
+    """
+    Class to represent basket of recipes
+
+    Stored the following attributes
+        recipe: (str)
+        quantityt: (int)
+    """
+
+    __tablename__ = 'basket'
+
+    id = db.Column(db.Integer, primary_key=True)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable=False)
+    quantity = db.Column(db.Integer, nullable=False, default=1)
+    recipe = db.relationship('Recipe', backref='basket')
 
 class User(db.Model):
     """

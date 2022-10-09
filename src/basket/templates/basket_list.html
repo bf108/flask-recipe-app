@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block styling %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/form_styles.css') }}">
+{% endblock %}
+
+{% block content %}
+
+<div class="form-wrap">
+    <h1>Create Recipes</h1>
+
+    <form method="post">
+        {{ form.csrf_token }}
+        <div class="row">
+            <div class="col">
+                <div class="field">
+                    {{ form.recipe.label }}
+                    {{ form.recipe }}
+                    {% for error in form.recipe.errors %}
+                    <p class="validation-error">[{{ error }}]</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col">
+                <div class="field">
+                    {{ form.quantity.label }}
+                    {{ form.quantity }}
+                    {% for error in form.quantity.errors %}
+                    <p class="validation-error">[{{ error }}]</p>
+                    {% endfor %}
+                </div>
+            </div>
+            <div class="col">
+                <div class="field">
+                    <button type="submit">Add Recipe</button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<br>
+
+<div class="card-deck">
+    {% for item in cbr %}
+    <div class="card text-center">
+        <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
+        <div class="card-body">
+            <h4 class="card-title">
+                <a class="card-title"
+                    href="{{ url_for('recipes.recipe_detail',title=item.recipe.title) }}">{{item.recipe.title}}</a>
+                <br><small>Qty: {{item.quantity}}</small>
+            </h4>
+            <form action="{{ url_for('baskets.delete_basket_recipe', id=item.recipe.id) }}" method="post">
+                <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
+                <div class="field">
+                    <button
+                        onclick="return confirm('Are you sure you want to remove {{ item.recipe.title }} from the basket?')"
+                        class="btn btn-danger">Delete</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<br>
+<br>
+<div>
+    <h3>Ingredients</h3>
+    <table class="table table-sm">
+        <thead>
+            <tr>
+                <th scope="col">Ingredient</th>
+                <th scope="col">Quantity</th>
+                <th scope="col">Unit</th>
+                <th scope="col">Recipes</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in agg_ing %}
+            <tr>
+                <td>{{row[0]}}</td>
+                <td>{{row[1]['quantity']}}</td>
+                <td>{{row[1]['unit']}}</td>
+                <td>{{row[1]['recipes']}}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

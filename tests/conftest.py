@@ -26,12 +26,12 @@ def test_client():
 
 @pytest.fixture(scope='module')
 def new_category():
-    new_cat = Category('Fruit')
+    new_cat = Category('fruit')
     return new_cat
 
 @pytest.fixture(scope='module')
 def new_ingredient():
-    new_ingredient = Ingredient('Orange', 1)
+    new_ingredient = Ingredient('orange', 1)
     return new_ingredient
 
 @pytest.fixture(scope='module')

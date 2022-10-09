@@ -22,13 +22,15 @@
         <nav class="nav">
             <a class="nav-link logo" href="{{ url_for('ingredients.list_items') }}">Recipe App</a>
             <ul class="nav-list">
+                {% if current_user.is_authenticated %}
+                <li class="nav-item"><a class="nav-link" href="{{ url_for('baskets.list_basket_recipes') }}">Basket</a>
+                </li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('recipes.list_recipes') }}">Recipes</a>
                 </li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('ingredients.list_items') }}">Ingredients</a>
                 </li>
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('ingredients.list_categories') }}">Food
                         Categories</a></li>
-                {% if current_user.is_authenticated %}
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('users.logout') }}">Logout</a></li>
                 {% else %}
                 <li class="nav-item"><a class="nav-link" href="{{ url_for('users.login') }}">Login</a></li>

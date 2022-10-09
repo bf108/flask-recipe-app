@@ -22,9 +22,9 @@ class TestCategoryValidation:
         """
         test_item = CategoryModel(
                 existing=[],
-                category='Dairy')
+                category='dairy')
 
-        assert test_item.category == 'Dairy'
+        assert test_item.category == 'dairy'
     
     def test_invalid_category_punc(self):
         """
@@ -36,7 +36,7 @@ class TestCategoryValidation:
         with pytest.raises(ValueError):
             test_bad_item = CategoryModel(
                 existing=[],
-                category='Dairy!')
+                category='dairy!')
 
     def test_invalid_category_digit(self):
         """
@@ -48,7 +48,7 @@ class TestCategoryValidation:
         with pytest.raises(ValueError):
             test_bad_item = CategoryModel(
                 existing=[],
-                category='Dairy1')
+                category='dairy1')
     
     def test_invalid_category_duplicate(self):
         """
@@ -59,8 +59,8 @@ class TestCategoryValidation:
 
         with pytest.raises(ValueError):
             test_bad_item = CategoryModel(
-                existing=['Dairy'],
-                category='Dairy')
+                existing=['dairy'],
+                category='dairy')
 
 class TestItemValidation:
     def test_valid_item(self):
@@ -71,11 +71,11 @@ class TestItemValidation:
         """
         test_item = ItemModel(
                 existing=[],
-                item='Cheese',
-                category='Dairy')
+                item='cheese',
+                category='dairy')
 
-        assert test_item.item == 'Cheese'
-        assert test_item.category == 'Dairy'
+        assert test_item.item == 'cheese'
+        assert test_item.category == 'dairy'
     
     def test_valid_item_caps(self):
         """
@@ -86,10 +86,10 @@ class TestItemValidation:
         test_item = ItemModel(
                 existing=[],
                 item='EGGS',
-                category='Baking')
+                category='baking')
 
-        assert test_item.item == 'Eggs'
-        assert test_item.category == 'Baking'
+        assert test_item.item == 'eggs'
+        assert test_item.category == 'baking'
 
     def test_valid_item_lower(self):
         """
@@ -100,10 +100,10 @@ class TestItemValidation:
         test_item = ItemModel(
                 existing=[],
                 item='eggs',
-                category='Baking')
+                category='baking')
 
-        assert test_item.item == 'Eggs'
-        assert test_item.category == 'Baking'
+        assert test_item.item == 'eggs'
+        assert test_item.category == 'baking'
 
     def test_digit_in_item(self):
         """
@@ -115,7 +115,7 @@ class TestItemValidation:
             test_bad_item = ItemModel(
                 existing=[],
                 item='Chee3e',
-                category='Dairy')
+                category='dairy')
 
     def test_punctuation_in_item(self):
         """
@@ -126,8 +126,8 @@ class TestItemValidation:
         with pytest.raises(ValueError):
             test_bad_item = ItemModel(
                 existing=[],
-                item='Cheese!',
-                category='Dairy')
+                item='cheese!',
+                category='dairy')
 
     def test_missing_item(self):
         """
