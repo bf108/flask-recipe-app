@@ -1,0 +1,337 @@
+{% extends "base.html" %}
+
+{% block styling %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/form_styles.css') }}">
+{% endblock %}
+
+{% block content %}
+<div>
+    <form>
+        <div class="form-group">
+            <label for="recipeTitle">Add a New Recipe</label>
+            <input type="text" class="form-control" id="recipe_title" placeholder="Recipe Title">
+        </div>
+        <label>Method</label>
+        <div id="method_items">
+            <div class="form-row">
+                <div class="form-group col-md-11">
+                    <input type="text" class="form-control" id="step1" placeholder="Step 1">
+                </div>
+            </div>
+        </div>
+        <button type="button" class="btn btn-primary" id="addStep">Add step</button>
+        <br>
+        <br>
+        <!-- Auto-complete searchbar -->
+        <div>
+            <form autocomplete="off" action="/action_page.php">
+                <label for="ingredientSelect">Add Ingredients</label>
+                <div class="autocomplete" style="width:300px;">
+                    <input id="myInput" type="text" name="myIngredient" placeholder="Ingredient">
+                </div>
+                <button type="button" class="btn btn-primary" id="addInput">Add</button>
+            </form>
+        </div>
+        <div id="ingredient_items">
+            <div class="form-row">
+                <div class="col-md-7">
+                    <label for="ingredient">Ingredients</label>
+                </div>
+                <div class="col-md-2">
+                    <label for="quantity">Quantity</label>
+                </div>
+                <div class="col-md-2">
+                    <label for="units">Units</label>
+                </div>
+            </div>
+        </div>
+        <br>
+        <br>
+        <button type="button" class="btn btn-primary" id="submit">Submit</button>
+    </form>
+</div>
+<script>
+    const units = ['n/a', 'g', 'ml', 'tsp', 'tbsp', 'cup', 'fl oz', 'pint', 'ounce', 'lb']
+
+    createFormDivCol = function (cols) {
+        const newDiv = document.createElement('div')
+        newDiv.classList.add(`col-md-${cols}`)
+        return newDiv
+    }
+
+    createFormInput = function (type, value = null, readonly = false) {
+        const newInput = document.createElement('input')
+        newInput.classList.add('form-control')
+        newInput.setAttribute('type', type)
+        if (value) {
+            newInput.setAttribute('value', value)
+        }
+        if (readonly) {
+            newInput.setAttribute('readonly', true)
+        }
+        return newInput
+    }
+
+    createSelectInput = function () {
+        const newSelect = document.createElement('select')
+        newSelect.classList.add('form-control')
+        newSelect.setAttribute('id', 'inputUnit')
+
+        Object.entries(units).forEach(tup => {
+            let newOption = document.createElement('option')
+            if (tup[1] === 'n/a') { newOption.setAttribute('selected', true) }
+            newOption.value = tup[0]
+            newOption.innerHTML = tup[1]
+            newSelect.appendChild(newOption)
+        })
+
+        return newSelect
+
+    }
+
+    createDeleteButtonDiv = function (id, post_func = null) {
+        const newButtonDiv = document.createElement('div')
+        newButtonDiv.classList.add('col-md-1')
+
+        const newDeleteButton = document.createElement('button')
+        newDeleteButton.setAttribute('type', `button`)
+        newDeleteButton.setAttribute('id', id)
+        newDeleteButton.classList.add('btn', 'btn-light')
+        newDeleteButton.textContent = "❌"
+        newDeleteButton.addEventListener('click', event => {
+            const parentDivRow = newButtonDiv.parentElement
+            const grandparent = parentDivRow.parentElement
+            grandparent.removeChild(parentDivRow)
+            if (post_func) { post_func() }
+        })
+        newButtonDiv.appendChild(newDeleteButton)
+        return newButtonDiv
+    }
+
+    createFormGroupIngredients = function (ingredient) {
+        const ingredientItems = document.getElementById('ingredient_items')
+        const numberOfItems = ingredientItems.children.length
+        const formRowDiv = document.createElement('div')
+        formRowDiv.classList.add('form-row')
+        formRowDiv.setAttribute('id', `ingredient${numberOfItems}`)
+        tempObject = {
+            1: { value: ingredient, col: 7, type: 'text', readonly: true },
+            2: { value: 1, col: 2, type: 'number', readonly: false },
+            3: { col: 2, type: 'select' }
+        }
+
+        Object.values(tempObject).forEach(obj => {
+            let newDivCol = createFormDivCol(obj['col'])
+            if (obj['type'] !== 'select') {
+                newDivCol.appendChild(createFormInput(obj['type'], obj['value'], obj['readonly']))
+            } else {
+                newDivCol.appendChild(createSelectInput())
+            }
+            formRowDiv.appendChild(newDivCol)
+        })
+        const delete_button_id = `deleteIngredient${numberOfItems}`
+        const newButtonDiv = createDeleteButtonDiv(delete_button_id)
+        formRowDiv.appendChild(newButtonDiv)
+
+        return formRowDiv
+
+    }
+
+    addIngredient = function () {
+        const inputValue = document.getElementById('myInput').value
+        console.log(inputValue)
+        if (inputValue) {
+            const newIngredient = createFormGroupIngredients(inputValue)
+            const existingIngredients = document.getElementById('ingredient_items')
+            existingIngredients.appendChild(newIngredient)
+        }
+    }
+
+    numberSteps = function () {
+        var methodArray = document.getElementById('method_items')
+        const divArray = [...methodArray.children]
+        let i = 1
+        divArray.forEach(item => {
+            const inputTemp = item.querySelector('input')
+            const deleteTemp = item.querySelector('button')
+            inputTemp.setAttribute('id', `step${i}`)
+            inputTemp.setAttribute('placeholder', `Step ${i}`)
+            deleteTemp.setAttribute('id', `delete${i}`)
+            i++
+        })
+    }
+
+    addStep = function () {
+        var methodArray = document.getElementById('method_items')
+        const currentNumSteps = methodArray.childElementCount
+
+        //create div element
+        const newStep = document.createElement('div')
+        newStep.classList.add('form-row')
+
+        //create input element
+        const newInputDiv = document.createElement('div')
+        newInputDiv.classList.add('form-group', 'col-md-11')
+
+        const newInput = document.createElement('input')
+        newInput.classList.add('form-control')
+        newInput.setAttribute('id', `step${currentNumSteps + 1}`)
+        newInput.setAttribute('type', "text")
+        newInput.setAttribute('placeholder', `Step ${currentNumSteps + 1}`)
+
+        const delet_button_id = `deletButton${currentNumSteps + 1}`
+        const newDeleteButtonDiv = createDeleteButtonDiv(delet_button_id, numberSteps)
+
+        newInputDiv.appendChild(newInput)
+        newStep.appendChild(newInputDiv)
+        newStep.appendChild(newDeleteButtonDiv)
+
+        //add new step
+        methodArray.appendChild(newStep)
+    }
+
+    deleteStep = function (elm) {
+        const formRowToDelete = elm.parentElement
+        const parElm = formRowToDelete.parentElement
+        parElm.removeChild(formRowToDelete)
+        numberSteps()
+    }
+
+    var itemArray
+    async function get_data() {
+        //get json object with ingredients and ingredient id
+        const resp = await fetch('/get_items', {})
+        const json = await resp.json()
+        return json
+    }
+
+    get_data().then(value => {
+        //convert json object to list of ingredients sorted alphabetically
+        itemArray = Object.values(value)
+        itemArray.sort()
+        //Call to the autocomplete function needs to be made after the promise because
+        //otherwise the data isn't available and array is empty
+        autocomplete(document.getElementById("myInput"), itemArray);
+
+    })
+
+    function autocomplete(inp, arr) {
+        /*the autocomplete function takes two arguments,
+        the text field element and an array of possible autocompleted values:*/
+        var currentFocus;
+        /*execute a function when someone writes in the text field:*/
+        inp.addEventListener("input", function (e) {
+            var a, b, i, val = this.value;
+            /*close any already open lists of autocompleted values*/
+            closeAllLists();
+            if (!val) { return false; }
+            currentFocus = -1;
+            /*create a DIV element that will contain the items (values):*/
+            a = document.createElement("DIV");
+            a.setAttribute("id", this.id + "autocomplete-list");
+            a.setAttribute("class", "autocomplete-items");
+            /*append the DIV element as a child of the autocomplete container:*/
+            this.parentNode.appendChild(a);
+            /*for each item in the array...*/
+            for (i = 0; i < arr.length; i++) {
+                /*check if the item starts with the same letters as the text field value:*/
+                if (arr[i].substr(0, val.length).toUpperCase() == val.toUpperCase()) {
+                    /*create a DIV element for each matching element:*/
+                    b = document.createElement("DIV");
+                    /*make the matching letters bold:*/
+                    b.innerHTML = "<strong>" + arr[i].substr(0, val.length) + "</strong>";
+                    b.innerHTML += arr[i].substr(val.length);
+                    /*insert a input field that will hold the current array item's value:*/
+                    b.innerHTML += "<input type='hidden' value='" + arr[i] + "'>";
+                    /*execute a function when someone clicks on the item value (DIV element):*/
+                    b.addEventListener("click", function (e) {
+                        /*insert the value for the autocomplete text field:*/
+                        inp.value = this.getElementsByTagName("input")[0].value;
+                        /*close the list of autocompleted values,
+                        (or any other open lists of autocompleted values:*/
+                        closeAllLists();
+                    });
+                    a.appendChild(b);
+                }
+            }
+        });
+        /*execute a function presses a key on the keyboard:*/
+        inp.addEventListener("keydown", function (e) {
+            var x = document.getElementById(this.id + "autocomplete-list");
+            if (x) x = x.getElementsByTagName("div");
+            if (e.keyCode == 40) {
+                /*If the arrow DOWN key is pressed,
+                increase the currentFocus variable:*/
+                currentFocus++;
+                /*and and make the current item more visible:*/
+                addActive(x);
+            } else if (e.keyCode == 38) { //up
+                /*If the arrow UP key is pressed,
+                decrease the currentFocus variable:*/
+                currentFocus--;
+                /*and and make the current item more visible:*/
+                addActive(x);
+            } else if (e.keyCode == 13) {
+                /*If the ENTER key is pressed, prevent the form from being submitted,*/
+                e.preventDefault();
+                if (currentFocus > -1) {
+                    /*and simulate a click on the "active" item:*/
+                    if (x) x[currentFocus].click();
+                }
+            }
+        });
+        function addActive(x) {
+            /*a function to classify an item as "active":*/
+            if (!x) return false;
+            /*start by removing the "active" class on all items:*/
+            removeActive(x);
+            if (currentFocus >= x.length) currentFocus = 0;
+            if (currentFocus < 0) currentFocus = (x.length - 1);
+            /*add class "autocomplete-active":*/
+            x[currentFocus].classList.add("autocomplete-active");
+        }
+        function removeActive(x) {
+            /*a function to remove the "active" class from all autocomplete items:*/
+            for (var i = 0; i < x.length; i++) {
+                x[i].classList.remove("autocomplete-active");
+            }
+        }
+        function closeAllLists(elmnt) {
+            /*close all autocomplete lists in the document,
+            except the one passed as an argument:*/
+            var x = document.getElementsByClassName("autocomplete-items");
+            for (var i = 0; i < x.length; i++) {
+                if (elmnt != x[i] && elmnt != inp) {
+                    x[i].parentNode.removeChild(x[i]);
+                }
+            }
+        }
+        /*execute a function when someone clicks in the document:*/
+        document.addEventListener("click", function (e) {
+            closeAllLists(e.target);
+        });
+    }
+
+    //Event listener for add step
+    const addStepButton = document.getElementById('addStep')
+    addStepButton.addEventListener('click', event => {
+        addStep()
+    })
+
+    const submitBut = document.getElementById('submit')
+    submitBut.addEventListener('click', event => {
+        console.log(submitBut)
+    })
+
+    const addIngredientButton = document.getElementById('addInput')
+    addIngredientButton.addEventListener('click', event => {
+        console.log('tried to add ingredient')
+        addIngredient()
+    })
+
+
+
+</script>
+
+{% endblock %}

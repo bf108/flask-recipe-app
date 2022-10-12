@@ -26,6 +26,12 @@ import click
 ################################
 # Blueprints
 ################################
+@recipes_blueprint.route('/add_recipe', methods=["GET",'POST'])
+def add_recipe():
+    if request.method == 'POST':
+        pass
+    return render_template('recipe_create.html')
+
 @recipes_blueprint.route('/recipes', methods=["GET",'POST'])
 def list_recipes():
     form = RecipeForm()
