@@ -7,16 +7,17 @@
 
 {% block content %}
 <div>
-    <form>
+    <form method="post" action='/add_recipe'>
+        <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="recipeTitle">Add a New Recipe</label>
-            <input type="text" class="form-control" id="recipe_title" placeholder="Recipe Title">
+            <input type="text" class="form-control" id="recipe_title" placeholder="Recipe Title" required>
         </div>
         <label>Method</label>
         <div id="method_items">
             <div class="form-row">
                 <div class="form-group col-md-11">
-                    <input type="text" class="form-control" id="step1" placeholder="Step 1">
+                    <input type="text" class="form-control" id="step1" placeholder="Step 1" required>
                 </div>
             </div>
         </div>
@@ -25,13 +26,11 @@
         <br>
         <!-- Auto-complete searchbar -->
         <div>
-            <form autocomplete="off" action="/action_page.php">
-                <label for="ingredientSelect">Add Ingredients</label>
-                <div class="autocomplete" style="width:300px;">
-                    <input id="myInput" type="text" name="myIngredient" placeholder="Ingredient">
-                </div>
-                <button type="button" class="btn btn-primary" id="addInput">Add</button>
-            </form>
+            <label for="ingredientSelect">Add Ingredients</label>
+            <div class="autocomplete" style="width:200px;">
+                <input id="myInput" type="text" name="myIngredient" placeholder="Ingredient">
+            </div>
+            <button type="button" class="btn btn-primary" id="addInput">Add</button>
         </div>
         <div id="ingredient_items">
             <div class="form-row">
@@ -48,7 +47,9 @@
         </div>
         <br>
         <br>
-        <button type="button" class="btn btn-primary" id="submit">Submit</button>
+        <div class="field">
+            <button type="submit">Submit</button>
+        </div>
     </form>
 </div>
 <script>
@@ -64,6 +65,7 @@
         const newInput = document.createElement('input')
         newInput.classList.add('form-control')
         newInput.setAttribute('type', type)
+        newInput.setAttribute('required', true)
         if (value) {
             newInput.setAttribute('value', value)
         }
@@ -171,15 +173,14 @@
         newInput.classList.add('form-control')
         newInput.setAttribute('id', `step${currentNumSteps + 1}`)
         newInput.setAttribute('type', "text")
+        newInput.setAttribute('required', true)
         newInput.setAttribute('placeholder', `Step ${currentNumSteps + 1}`)
 
         const delet_button_id = `deletButton${currentNumSteps + 1}`
         const newDeleteButtonDiv = createDeleteButtonDiv(delet_button_id, numberSteps)
 
         newInputDiv.appendChild(newInput)
-        newStep.appendChild(newInputDiv)
-        newStep.appendChild(newDeleteButtonDiv)
-
+        newStep.append(newInputDiv, newDeleteButtonDiv)
         //add new step
         methodArray.appendChild(newStep)
     }
@@ -310,11 +311,6 @@
     const addStepButton = document.getElementById('addStep')
     addStepButton.addEventListener('click', event => {
         addStep()
-    })
-
-    const submitBut = document.getElementById('submit')
-    submitBut.addEventListener('click', event => {
-        console.log(submitBut)
     })
 
     const addIngredientButton = document.getElementById('addInput')
