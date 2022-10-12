@@ -115,27 +115,20 @@
         const formRowDiv = document.createElement('div')
         formRowDiv.classList.add('form-row')
         formRowDiv.setAttribute('id', `ingredient${numberOfItems}`)
-        tempObject = {
-            1: { value: ingredient, col: 7, type: 'text', readonly: true },
-            2: { value: 1, col: 2, type: 'number', readonly: false },
-            3: { col: 2, type: 'select' }
-        }
-
-        Object.values(tempObject).forEach(obj => {
-            let newDivCol = createFormDivCol(obj['col'])
-            if (obj['type'] !== 'select') {
-                newDivCol.appendChild(createFormInput(obj['type'], obj['value'], obj['readonly']))
-            } else {
-                newDivCol.appendChild(createSelectInput())
-            }
-            formRowDiv.appendChild(newDivCol)
-        })
-        const delete_button_id = `deleteIngredient${numberOfItems}`
-        const newButtonDiv = createDeleteButtonDiv(delete_button_id)
-        formRowDiv.appendChild(newButtonDiv)
-
+        //ingredient read only
+        let newDivCol1 = createFormDivCol(7)
+        newDivCol1.appendChild(createFormInput('text', ingredient, readonly = true))
+        // quantity defaul to 1
+        let newDivCol2 = createFormDivCol(2)
+        newDivCol2.appendChild(createFormInput('number', 1))
+        //unit selection
+        let newDivCol3 = createFormDivCol(2)
+        newDivCol3.appendChild(createSelectInput())
+        // Add delete button
+        formRowDiv.append(
+            newDivCol1, newDivCol2, newDivCol3,
+            createDeleteButtonDiv(`deleteIngredient${numberOfItems}`))
         return formRowDiv
-
     }
 
     addIngredient = function () {
