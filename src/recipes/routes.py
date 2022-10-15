@@ -29,8 +29,37 @@ import click
 @recipes_blueprint.route('/add_recipe', methods=["GET",'POST'])
 def add_recipe():
     if request.method == 'POST':
-        pass
-    return render_template('recipe_create.html')
+        # print(request.form)
+        units_options = ['n/a', 'g', 'ml', 'tsp', 'tbsp', 'cup', 'fl oz', 'pint', 'ounce', 'lb']
+        units_selector = [(str(i),u) for i, u in enumerate(units_options)]
+        print(units_selector)
+        recipe_title = request.form['recipeTitle']
+        steps, ingredients, steps, units, qtys = {}, {}, {}, {}, {}
+        for k in request.form:
+            if k not in ['recipeTitle','csrf_token','myIngredient']:
+                num = k.split("_")[-1]
+                if 'step' in k:
+                    steps[num] = request.form[k]
+                elif 'unit' in k:
+                    units[num] = request.form[k]
+                elif 'quantity' in k:
+                    qtys[num] = request.form[k]
+                elif 'ingredient' in k:
+                    ingredients[num] = request.form[k]
+        #Ingredient
+        #  List tuples dict
+        ingredients_list = []
+        for k, _ in units.items():
+            ingredients_list.append({'item':ingredients[k],
+                                    'qty':qtys[k],
+                                    'unit': units[k],
+                                    'num': k
+                                    })
+        #Steps: List tuples (int, str)
+        steps = sorted([(k,v) for k, v in steps.items()], key=lambda x: x[0])
+        return render_template('recipe_create.html', recipe_title=recipe_title, steps=steps, ingredients=ingredients_list, units=units_selector)
+    else:
+        return render_template('recipe_create.html')
 
 @recipes_blueprint.route('/recipes', methods=["GET",'POST'])
 def list_recipes():
@@ -127,3 +156,5 @@ def delete_recipe(id):
     db.session.commit()
     flash(f'Deleted: {rec_to_delete.title}')
     return redirect(url_for('recipes.list_recipes'))
+
+

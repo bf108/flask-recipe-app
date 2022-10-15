@@ -11,15 +11,37 @@
         <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="recipeTitle">Add a New Recipe</label>
-            <input type="text" class="form-control" id="recipe_title" placeholder="Recipe Title" required>
+            {% if recipe_title %}
+            <input type="text" class="form-control" id="recipe_title" name='recipeTitle' value="{{recipe_title}}"
+                required>
+            {% else %}
+            <input type="text" class="form-control" id="recipe_title" name='recipeTitle' placeholder="Recipe Title"
+                required>
+            {% endif %}
         </div>
         <label>Method</label>
         <div id="method_items">
+            {% if steps %}
+            {% for step in steps %}
             <div class="form-row">
                 <div class="form-group col-md-11">
-                    <input type="text" class="form-control" id="step1" placeholder="Step 1" required>
+                    <input type="text" class="form-control" id="step1" value="{{step[1]}}" name='step_{{step[0]}}'
+                        required>
+                </div>
+                {% if step[0] != "1" %}
+                <div class="col-md-1">
+                    <button type="button" id="deletButton{{step[0]}}" class="btn btn-light">❌</button>
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+            {% else %}
+            <div class="form-row">
+                <div class="form-group col-md-11">
+                    <input type="text" class="form-control" id="step1" placeholder="Step 1" name='step_1' required>
                 </div>
             </div>
+            {% endif %}
         </div>
         <button type="button" class="btn btn-primary" id="addStep">Add step</button>
         <br>
@@ -34,16 +56,40 @@
         </div>
         <div id="ingredient_items">
             <div class="form-row">
-                <div class="col-md-7">
+                <div class="col-md-6">
                     <label for="ingredient">Ingredients</label>
                 </div>
                 <div class="col-md-2">
                     <label for="quantity">Quantity</label>
                 </div>
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label for="units">Units</label>
                 </div>
             </div>
+            {% if ingredients %}
+            {% for i in ingredients %}
+            <div class="form-row" id="ingredient{{i['num']}}">
+                <div class="col-md-6"><input class="form-control" type="text" required="true" value="{{i['item']}}"
+                        readonly="true" name="ingredient_{{i['num']}}"></div>
+                <div class="col-md-2"><input class="form-control" type="number" required="true" value="{{i['qty']}}"
+                        name="ingredient_quantity_{{i['num']}}" min="0"></div>
+                <div class="col-md-3"><select class="form-control" id="inputUnit" name="ingredient_unit_{{i['num']}}">
+                        {% for u in units %}
+                        {% if u[0] == i['unit'] %}
+                        <option selected="true" value="{{u[0]}}">{{u[1]}}</option>
+                        {% else %}
+                        <option value="{{u[0]}}">{{u[1]}}</option>
+                        {% endif %}
+                        {% endfor %}
+
+                    </select>
+                </div>
+                <div class="col-md-1"><button type="button" id="deleteIngredient{{i['num']}}"
+                        class="btn btn-light">❌</button>
+                </div>
+            </div>
+            {% endfor %}
+            {% endif %}
         </div>
         <br>
         <br>
@@ -61,24 +107,27 @@
         return newDiv
     }
 
-    createFormInput = function (type, value = null, readonly = false) {
+    createFormInput = function (type, id, value = null, readonly = false) {
         const newInput = document.createElement('input')
         newInput.classList.add('form-control')
         newInput.setAttribute('type', type)
         newInput.setAttribute('required', true)
-        if (value) {
-            newInput.setAttribute('value', value)
-        }
+        newInput.setAttribute('value', value)
         if (readonly) {
             newInput.setAttribute('readonly', true)
+            newInput.setAttribute('name', `ingredient_${id}`)
+        } else {
+            newInput.setAttribute('name', `ingredient_quantity_${id}`)
+            newInput.setAttribute('min', 0)
         }
         return newInput
     }
 
-    createSelectInput = function () {
+    createSelectInput = function (id) {
         const newSelect = document.createElement('select')
         newSelect.classList.add('form-control')
         newSelect.setAttribute('id', 'inputUnit')
+        newSelect.setAttribute('name', `ingredient_unit_${id}`)
 
         Object.entries(units).forEach(tup => {
             let newOption = document.createElement('option')
@@ -92,7 +141,29 @@
 
     }
 
+    setDeteleOnClickSteps = function () {
+        const deleteElmDivs = document.getElementsByClassName('col-md-1')
+        if (deleteElmDivs) {
+            [...deleteElmDivs].forEach(elm => {
+                elm.children[0].addEventListener('click', event => {
+                    let toDelete = elm.parentElement
+                    let toDeleteFrom = elm.parentElement.parentElement
+                    const renumber = toDeleteFrom.id === 'method_items'
+                    toDeleteFrom.removeChild(toDelete)
+                    if (renumber) {
+                        numberSteps()
+                    } else {
+                        numberIngredients()
+                    }
+
+                })
+            })
+        }
+    }
+
     createDeleteButtonDiv = function (id, post_func = null) {
+        //id of new delete button
+        // post_func: the renumber function either for steps or ingredients
         const newButtonDiv = document.createElement('div')
         newButtonDiv.classList.add('col-md-1')
 
@@ -105,6 +176,7 @@
             const parentDivRow = newButtonDiv.parentElement
             const grandparent = parentDivRow.parentElement
             grandparent.removeChild(parentDivRow)
+
             if (post_func) { post_func() }
         })
         newButtonDiv.appendChild(newDeleteButton)
@@ -113,34 +185,42 @@
 
     createFormGroupIngredients = function (ingredient) {
         const ingredientItems = document.getElementById('ingredient_items')
-        const numberOfItems = ingredientItems.children.length
+        const numberOfItems = ingredientItems.children.length || 1
         const formRowDiv = document.createElement('div')
         formRowDiv.classList.add('form-row')
         formRowDiv.setAttribute('id', `ingredient${numberOfItems}`)
         //ingredient read only
-        let newDivCol1 = createFormDivCol(7)
-        newDivCol1.appendChild(createFormInput('text', ingredient, readonly = true))
+        let newDivCol1 = createFormDivCol(6)
+        newDivCol1.appendChild(createFormInput('text', numberOfItems, ingredient, readonly = true))
         // quantity defaul to 1
         let newDivCol2 = createFormDivCol(2)
-        newDivCol2.appendChild(createFormInput('number', 1))
+        newDivCol2.appendChild(createFormInput('number', numberOfItems, 1))
         //unit selection
-        let newDivCol3 = createFormDivCol(2)
-        newDivCol3.appendChild(createSelectInput())
+        let newDivCol3 = createFormDivCol(3)
+        newDivCol3.appendChild(createSelectInput(numberOfItems))
         // Add delete button
         formRowDiv.append(
             newDivCol1, newDivCol2, newDivCol3,
-            createDeleteButtonDiv(`deleteIngredient${numberOfItems}`))
+            //numberIngredients is to renumber ingredients after one deleted
+            createDeleteButtonDiv(`deleteIngredient${numberOfItems}`, numberIngredients))
         return formRowDiv
     }
 
-    addIngredient = function () {
+    addIngredient = async function () {
         const inputValue = document.getElementById('myInput').value
         console.log(inputValue)
-        if (inputValue) {
-            const newIngredient = createFormGroupIngredients(inputValue)
-            const existingIngredients = document.getElementById('ingredient_items')
-            existingIngredients.appendChild(newIngredient)
-        }
+        get_data().then(value => {
+            itemArray = Object.values(value)
+            if (inputValue && itemArray.includes(inputValue)) {
+                const newIngredient = createFormGroupIngredients(inputValue)
+                const existingIngredients = document.getElementById('ingredient_items')
+                existingIngredients.appendChild(newIngredient)
+                //make the search bar empty again
+                document.getElementById('myInput').value = ''
+            } else {
+                alert(`${inputValue} is not a recognized ingredient`)
+            }
+        })
     }
 
     numberSteps = function () {
@@ -151,8 +231,33 @@
             const inputTemp = item.querySelector('input')
             const deleteTemp = item.querySelector('button')
             inputTemp.setAttribute('id', `step${i}`)
+            inputTemp.setAttribute('name', `step_${i}`)
             inputTemp.setAttribute('placeholder', `Step ${i}`)
-            deleteTemp.setAttribute('id', `delete${i}`)
+            //avoid trying to label the first step which is always required so has no delete button
+            if (i > 1) deleteTemp.setAttribute('id', `delete${i}`)
+            i++
+        })
+    }
+
+    renumberIngredientFormRowDiv = function (div, id) {
+        console.log(div)
+        div.setAttribute('id', `ingredient${id}`)
+        const inputValue = div.getElementsByClassName('col-md-6')[0].children[0]
+        inputValue.setAttribute('name', `ingredient_${id}`)
+        const inputQty = div.getElementsByClassName('col-md-2')[0].children[0]
+        inputQty.setAttribute('name', `ingredient_quantity_${id}`)
+        const inputUnit = div.getElementsByClassName('col-md-3')[0].children[0]
+        inputUnit.setAttribute('name', `ingredient_unit_${id}`)
+        const inputDelete = div.getElementsByClassName('col-md-1')[0].children[0]
+        inputDelete.setAttribute('id', `deleteIngredient${id}`)
+    }
+
+    numberIngredients = function () {
+        var methodArray = document.getElementById('ingredient_items')
+        const divArray = [...methodArray.children]
+        let i = 0
+        divArray.forEach(item => {
+            if (i > 0) { renumberIngredientFormRowDiv(item, i) }
             i++
         })
     }
@@ -172,6 +277,7 @@
         const newInput = document.createElement('input')
         newInput.classList.add('form-control')
         newInput.setAttribute('id', `step${currentNumSteps + 1}`)
+        newInput.setAttribute('name', `step_${currentNumSteps + 1}`)
         newInput.setAttribute('type', "text")
         newInput.setAttribute('required', true)
         newInput.setAttribute('placeholder', `Step ${currentNumSteps + 1}`)
@@ -319,7 +425,9 @@
         addIngredient()
     })
 
-
+    document.addEventListener('DOMContentLoaded', function () {
+        setDeteleOnClickSteps()
+    })
 
 </script>
 
