@@ -1,7 +1,7 @@
 import re
 import string
 from typing import List, Optional, Dict, Union
-from flask import request, render_template, session, flash, current_app, redirect, url_for
+from flask import request, render_template, session, flash, current_app, redirect, url_for, jsonify
 from pydantic import BaseModel, validator, ValidationError
 from src.models import Ingredient, Category
 from src import database
@@ -222,7 +222,6 @@ def update_item(id):
 
     return render_template('item_update.html', item=ing_to_update, categories_drop_down=modified_drop_down)
 
-
 @ingredients_blueprint.route('/categories', methods=['GET','POST'])
 def list_categories():
     if request.method == 'POST':
@@ -262,3 +261,10 @@ def delete_item(id):
     database.session.commit()
     flash(f'Deleted: {item_to_delete.name}')
     return redirect(url_for('ingredients.list_items'))
+
+@ingredients_blueprint.route('/get_items', methods=["GET"])
+def get_items():
+    all_ingredients = Ingredient.query.order_by(Ingredient.id).all()
+    # response = {tup[0]:tup[1] for tup in sorted([(i.id, i.name) for i in all_ingredients], key=lambda x: x[1])}
+    response = {i.id: i.name for i in all_ingredients}
+    return response
