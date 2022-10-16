@@ -126,7 +126,6 @@ def update_recipe(id):
         
         return render_template('recipe_create.html', recipe_title=recipe_title, steps=steps, ingredients=ingredients_list, units=units_selector, update=True, id=id)
 
-
 @recipes_blueprint.route('/recipes', methods=["GET",'POST'])
 def list_recipes():
     form = RecipeForm()
@@ -180,21 +179,6 @@ def recipe_detail(title):
         return redirect(url_for('recipes.recipe_detail',title=title))
     
     return render_template('recipe_fill.html', recipe=recipe_item, form=form, table_list=table_list)
-
-@recipes_blueprint.route('/recipes/<string:title>/update/<int:id>', methods=["GET",'POST'])
-def recipe_update(title, id):
-    rec = Recipe.query.filter_by(title=title).first_or_404()
-    rec_ing = rec.ing_recipe
-    rec_ing_row = [ri for ri in rec_ing if ri.ingredient_id == id][0]
-    form = IngredientRecipeForm(obj=rec_ing_row)
-    if request.method == 'POST':
-        #Form values
-        rec_ing_row.quantity = form.quantity.data
-        rec_ing_row.unit = form.unit.data
-        db.session.commit()
-        flash(f'Updated {rec_ing_row.ingredient_id} in {rec_ing_row.recipe_id} to {rec_ing_row.quantity}{rec_ing_row.unit}','success')
-        return redirect(url_for('recipes.recipe_detail',title=title))
-    return render_template('recipe_update.html', recipe_ing=rec_ing_row, title=title, id=id, form=form)
 
 # Route to serve up ingredients for js
 @recipes_blueprint.route('/<int:category>/ingredients', methods=["GET"])
