@@ -7,96 +7,109 @@
 
 {% block content %}
 <div>
-    <form method="post" action='/add_recipe'>
-        <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
-        <div class="form-group">
-            <label for="recipeTitle">Add a New Recipe</label>
-            {% if recipe_title %}
-            <input type="text" class="form-control" id="recipe_title" name='recipeTitle' value="{{recipe_title}}"
-                required>
-            {% else %}
-            <input type="text" class="form-control" id="recipe_title" name='recipeTitle' placeholder="Recipe Title"
-                required>
+    {% if update %}
+    <form method="post" action='/update_recipe/{{id}}'>
+        {% else %}
+        <form method="post" action='/add_recipe'>
             {% endif %}
-        </div>
-        <label>Method</label>
-        <div id="method_items">
-            {% if steps %}
-            {% for step in steps %}
-            <div class="form-row">
-                <div class="form-group col-md-11">
-                    <input type="text" class="form-control" id="step1" value="{{step[1]}}" name='step_{{step[0]}}'
-                        required>
+            <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
+            <div class="form-group">
+                {% if not update %}
+                <label for="recipeTitle">Add a New Recipe</label>
+                {% else %}
+                <label for="recipeTitle">Update Recipe</label>
+                {% endif %}
+                {% if recipe_title %}
+                <input type="text" class="form-control" id="recipe_title" name='recipeTitle' value="{{recipe_title}}"
+                    required>
+                {% else %}
+                <input type="text" class="form-control" id="recipe_title" name='recipeTitle' placeholder="Recipe Title"
+                    required>
+                {% endif %}
+            </div>
+            <label>Method</label>
+            <div id="method_items">
+                {% if steps %}
+                <div class="form-row">
+                    <div class="form-group col-md-11">
+                        <input type="text" class="form-control" id="step1" value="{{steps[0][1]}}"
+                            name='step_{{steps[0][0]}}' required>
+                    </div>
                 </div>
-                {% if step[0] != "1" %}
-                <div class="col-md-1">
-                    <button type="button" id="deletButton{{step[0]}}" class="btn btn-light">❌</button>
+                {% for step in steps[1:] %}
+                <div class="form-row">
+                    <div class="form-group col-md-11">
+                        <input type="text" class="form-control" id="step1" value="{{step[1]}}" name='step_{{step[0]}}'
+                            required>
+                    </div>
+                    <div class="col-md-1">
+                        <button type="button" id="deletButton{{step[0]}}" class="btn btn-light">❌</button>
+                    </div>
+                </div>
+                {% endfor %}
+                {% else %}
+                <div class="form-row">
+                    <div class="form-group col-md-11">
+                        <input type="text" class="form-control" id="step1" placeholder="Step 1" name='step_1' required>
+                    </div>
                 </div>
                 {% endif %}
             </div>
-            {% endfor %}
-            {% else %}
-            <div class="form-row">
-                <div class="form-group col-md-11">
-                    <input type="text" class="form-control" id="step1" placeholder="Step 1" name='step_1' required>
+            <button type="button" class="btn btn-primary" id="addStep">Add step</button>
+            <br>
+            <br>
+            <!-- Auto-complete searchbar -->
+            <div>
+                <label for="ingredientSelect">Add Ingredients</label>
+                <div class="autocomplete" style="width:200px;">
+                    <input id="myInput" type="text" name="myIngredient" placeholder="Ingredient">
                 </div>
+                <button type="button" class="btn btn-primary" id="addInput">Add</button>
             </div>
-            {% endif %}
-        </div>
-        <button type="button" class="btn btn-primary" id="addStep">Add step</button>
-        <br>
-        <br>
-        <!-- Auto-complete searchbar -->
-        <div>
-            <label for="ingredientSelect">Add Ingredients</label>
-            <div class="autocomplete" style="width:200px;">
-                <input id="myInput" type="text" name="myIngredient" placeholder="Ingredient">
-            </div>
-            <button type="button" class="btn btn-primary" id="addInput">Add</button>
-        </div>
-        <div id="ingredient_items">
-            <div class="form-row">
-                <div class="col-md-6">
-                    <label for="ingredient">Ingredients</label>
+            <div id="ingredient_items">
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <label for="ingredient">Ingredients</label>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="quantity">Quantity</label>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="units">Units</label>
+                    </div>
                 </div>
-                <div class="col-md-2">
-                    <label for="quantity">Quantity</label>
-                </div>
-                <div class="col-md-3">
-                    <label for="units">Units</label>
-                </div>
-            </div>
-            {% if ingredients %}
-            {% for i in ingredients %}
-            <div class="form-row" id="ingredient{{i['num']}}">
-                <div class="col-md-6"><input class="form-control" type="text" required="true" value="{{i['item']}}"
-                        readonly="true" name="ingredient_{{i['num']}}"></div>
-                <div class="col-md-2"><input class="form-control" type="number" required="true" value="{{i['qty']}}"
-                        name="ingredient_quantity_{{i['num']}}" min="0"></div>
-                <div class="col-md-3"><select class="form-control" id="inputUnit" name="ingredient_unit_{{i['num']}}">
-                        {% for u in units %}
-                        {% if u[0] == i['unit'] %}
-                        <option selected="true" value="{{u[0]}}">{{u[1]}}</option>
-                        {% else %}
-                        <option value="{{u[0]}}">{{u[1]}}</option>
-                        {% endif %}
-                        {% endfor %}
+                {% if ingredients %}
+                {% for i in ingredients %}
+                <div class="form-row" id="ingredient{{i['num']}}">
+                    <div class="col-md-6"><input class="form-control" type="text" required="true" value="{{i['item']}}"
+                            readonly="true" name="ingredient_{{i['num']}}"></div>
+                    <div class="col-md-2"><input class="form-control" type="number" required="true"
+                            value="{{i['quantity']}}" name="ingredient_quantity_{{i['num']}}" min="0"></div>
+                    <div class="col-md-3"><select class="form-control" id="inputUnit"
+                            name="ingredient_unit_{{i['num']}}">
+                            {% for u in units %}
+                            {% if u[0] == i['unit'] %}
+                            <option selected="true" value="{{u[0]}}">{{u[1]}}</option>
+                            {% else %}
+                            <option value="{{u[0]}}">{{u[1]}}</option>
+                            {% endif %}
+                            {% endfor %}
 
-                    </select>
+                        </select>
+                    </div>
+                    <div class="col-md-1"><button type="button" id="deleteIngredient{{i['num']}}"
+                            class="btn btn-light">❌</button>
+                    </div>
                 </div>
-                <div class="col-md-1"><button type="button" id="deleteIngredient{{i['num']}}"
-                        class="btn btn-light">❌</button>
-                </div>
+                {% endfor %}
+                {% endif %}
             </div>
-            {% endfor %}
-            {% endif %}
-        </div>
-        <br>
-        <br>
-        <div class="field">
-            <button type="submit">Submit</button>
-        </div>
-    </form>
+            <br>
+            <br>
+            <div class="field">
+                <button type="submit">Submit</button>
+            </div>
+        </form>
 </div>
 <script>
     const units = ['n/a', 'g', 'ml', 'tsp', 'tbsp', 'cup', 'fl oz', 'pint', 'ounce', 'lb']

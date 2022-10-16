@@ -3,7 +3,7 @@ import string
 from typing import List, Optional, Dict, Union
 from flask import request, render_template, session, flash, current_app, redirect, url_for, jsonify
 from pydantic import BaseModel, validator, ValidationError
-from src.models import Ingredient, Category, Recipe, IngredientRecipe
+from src.models import Ingredient, Category, Recipe, IngredientRecipe, RecipeMethod
 from src import database as db
 from sqlalchemy.exc import IntegrityError
 from . import recipes_blueprint
@@ -22,6 +22,73 @@ import click
 ################################
 
 # Dummy items to show before DB is created
+units_options = ['n/a', 'g', 'ml', 'tsp', 'tbsp', 'cup', 'fl oz', 'pint', 'ounce', 'lb']
+units_selector = [(str(i),u) for i, u in enumerate(units_options)]
+
+def extract_recipe_details_from_form(request):
+    """
+    logic to create a recipe, method and ingredients from form
+    helper function to avoid duplicate codde in add_recipe and update_recipe routes
+    """
+    recipe_title = request.form['recipeTitle'].lower()
+    steps, ingredients, steps, units, qtys = {}, {}, {}, {}, {}
+    for k in request.form:
+        if k not in ['recipeTitle','csrf_token','myIngredient']:
+            num = k.split("_")[-1]
+            if 'step' in k:
+                steps[num] = request.form[k]
+            elif 'unit' in k:
+                units[num] = request.form[k]
+            elif 'quantity' in k:
+                qtys[num] = request.form[k]
+            elif 'ingredient' in k:
+                ingredients[num] = request.form[k]
+    #Ingredient
+    #List tuples dict
+    ingredients_list = []
+    for k, _ in units.items():
+        ingredients_list.append({'item':ingredients[k],
+                                'quantity':qtys[k],
+                                'unit': units[k],
+                                'num': k
+                                })
+    #Steps: List tuples (int, str)
+    steps = sorted([(k,v) for k, v in steps.items()], key=lambda x: x[0])
+
+    return recipe_title, steps, ingredients_list
+
+def create_new_recipe(db, recipe_title, steps, ingredients_list, update=False):
+    try:
+        new_rec = Recipe(title=recipe_title)
+        db.session.add(new_rec)
+        db.session.commit()
+        #Add recipe steps
+        recipe_id = Recipe.query.filter_by(title=new_rec.title).first().id
+        for s in steps:
+            new_step = RecipeMethod(step=s[1], recipe_id=recipe_id)
+            db.session.add(new_step)
+        db.session.commit()
+        #Add ingredients
+        for i in ingredients_list:
+            ing_id = Ingredient.query.filter_by(name=i['item']).first().id
+            new_ing_rec = IngredientRecipe(recipe_id=recipe_id,
+                                            ingredient_id=ing_id,
+                                            quantity=i['quantity'],
+                                            unit=i['unit'])
+            db.session.add(new_ing_rec)
+        db.session.commit()
+        if update:
+            flash(f"Updated recipe: {recipe_title}. Steps: {len(steps)}. Ingredients: {len(ingredients_list)}")
+        else:
+            flash(f"Created recipe: {recipe_title}. Steps: {len(steps)}. Ingredients: {len(ingredients_list)}")
+        recipes = Recipe.query.order_by(Recipe.title).all()
+        return render_template('recipe_list.html', recipes=recipes)
+
+    except Exception as e:
+        print(e)
+        db.session.rollback()
+        flash(f"Recipe already exists",'error')
+        return render_template('recipe_create.html', recipe_title=recipe_title, steps=steps, ingredients=ingredients_list, units=units_selector, update=update)
 
 ################################
 # Blueprints
@@ -29,37 +96,36 @@ import click
 @recipes_blueprint.route('/add_recipe', methods=["GET",'POST'])
 def add_recipe():
     if request.method == 'POST':
-        # print(request.form)
-        units_options = ['n/a', 'g', 'ml', 'tsp', 'tbsp', 'cup', 'fl oz', 'pint', 'ounce', 'lb']
-        units_selector = [(str(i),u) for i, u in enumerate(units_options)]
-        print(units_selector)
-        recipe_title = request.form['recipeTitle']
-        steps, ingredients, steps, units, qtys = {}, {}, {}, {}, {}
-        for k in request.form:
-            if k not in ['recipeTitle','csrf_token','myIngredient']:
-                num = k.split("_")[-1]
-                if 'step' in k:
-                    steps[num] = request.form[k]
-                elif 'unit' in k:
-                    units[num] = request.form[k]
-                elif 'quantity' in k:
-                    qtys[num] = request.form[k]
-                elif 'ingredient' in k:
-                    ingredients[num] = request.form[k]
-        #Ingredient
-        #  List tuples dict
-        ingredients_list = []
-        for k, _ in units.items():
-            ingredients_list.append({'item':ingredients[k],
-                                    'qty':qtys[k],
-                                    'unit': units[k],
-                                    'num': k
-                                    })
-        #Steps: List tuples (int, str)
-        steps = sorted([(k,v) for k, v in steps.items()], key=lambda x: x[0])
-        return render_template('recipe_create.html', recipe_title=recipe_title, steps=steps, ingredients=ingredients_list, units=units_selector)
+        recipe_title, steps, ingredients_list = extract_recipe_details_from_form(request)
+        return create_new_recipe(db, recipe_title, steps, ingredients_list)
     else:
         return render_template('recipe_create.html')
+
+@recipes_blueprint.route('/update_recipe/<int:id>', methods=["GET",'POST'])
+def update_recipe(id):
+    if request.method == 'POST':
+        recipe_title, steps, ingredients_list = extract_recipe_details_from_form(request)
+        #Delete current recipe
+        rec_to_delete = Recipe.query.filter_by(title=recipe_title).first()
+        print(rec_to_delete)
+        db.session.delete(rec_to_delete)
+        db.session.commit()
+        return create_new_recipe(db, recipe_title, steps, ingredients_list, update=True)
+    else:
+        rec_to_update = Recipe.query.filter_by(id=id).first()
+        recipe_title = rec_to_update.title
+        steps = [(i+1,s.step) for i, s in enumerate(rec_to_update.steps)]
+        ingredients_list = []
+        for k, i in enumerate(rec_to_update.ingredients):
+            ingredients_list.append(
+            {'item': i.ingredients.name,
+            'quantity':i.quantity,
+            'unit': i.unit,
+            'num': k
+            })
+        
+        return render_template('recipe_create.html', recipe_title=recipe_title, steps=steps, ingredients=ingredients_list, units=units_selector, update=True, id=id)
+
 
 @recipes_blueprint.route('/recipes', methods=["GET",'POST'])
 def list_recipes():

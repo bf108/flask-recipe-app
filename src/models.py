@@ -33,7 +33,7 @@ class Ingredient(db.Model):
     name = db.Column(db.String, nullable=False, unique=True)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete="CASCADE"), nullable=False)
     category = db.relationship('Category',back_populates='ingredients', passive_deletes=True)
-    ing_recipe = db.relationship("IngredientRecipe", lazy='dynamic', back_populates='ingredients', cascade='all, delete')
+    in_recipes = db.relationship("IngredientRecipe", lazy='dynamic', back_populates='ingredients', cascade='all, delete')
 
     def __init__(self, name: str, category_id: int):
         self.name = name
@@ -46,25 +46,42 @@ class Ingredient(db.Model):
 class Recipe(db.Model):
     """
     Class that represents a recipe
-
     This stores the following attributes
         name: (type: string)
-        method: (type: Text)
     """
 
     __tablename__ = 'recipes'
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False, unique=True)
-    method = db.Column(db.Text, nullable=False, default='Just make it!')
-    ing_recipe = db.relationship("IngredientRecipe", backref='recipe', lazy=True, passive_deletes=True)
+    steps = db.relationship('RecipeMethod',lazy=True, back_populates="recipe",cascade='all, delete')
+    ingredients = db.relationship("IngredientRecipe", backref='recipe', lazy=True, passive_deletes=True)
 
-    def __init__(self, title: str, method: str):
+    def __init__(self, title: str):
         self.title = title
-        self.method = method
     
     def __repr__(self):
         return f"{self.title}"
+
+class RecipeMethod(db.Model):
+    """
+    Class that represents new recipe model method
+    This stores the following attributes:
+        step: (type: string)
+    """
+    __tablename__ = 'recipemethods'
+
+    id = db.Column(db.Integer, primary_key=True)
+    step = db.Column(db.String, nullable=False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id', ondelete="CASCADE"), nullable=False)
+    recipe = db.relationship('Recipe',back_populates='steps', passive_deletes=True)
+
+    def __init__(self, step: str, recipe_id: int):
+        self.step = step
+        self.recipe_id = recipe_id
+    
+    def __repr__(self):
+        return f"{self.step}"
 
 class IngredientRecipe(db.Model):
     """
@@ -83,10 +100,10 @@ class IngredientRecipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable=False)
     ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredients.id', ondelete="CASCADE"), nullable=False)
-    ingredients = db.relationship('Ingredient', back_populates='ing_recipe', passive_deletes=True)
+    #Change to ingredient
+    ingredients = db.relationship('Ingredient', back_populates='in_recipes', passive_deletes=True)
     quantity = db.Column(db.Float, nullable=False)
     unit = db.Column(db.String, nullable=False)
-    #One to Many relationship between recipe and rows in the IngredientRecipe Table
 
     def __init__(self, recipe_id: int, ingredient_id: int, quantity: float, unit: str):
         self.recipe_id = recipe_id

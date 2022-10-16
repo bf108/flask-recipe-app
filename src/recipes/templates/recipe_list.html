@@ -6,36 +6,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="form-wrap">
-    <h1>Create Recipes</h1>
 
-    <form method="post">
-        {{ form.csrf_token }}
-
-        <div class="field">
-            {{ form.title.label }}
-            {{ form.title }}
-            {% for error in form.title.errors %}
-            <p class="validation-error">[{{ error }}]</p>
-            {% endfor %}
-        </div>
-
-        <div class="field">
-            {{ form.method.label }}
-            {{ form.method }}
-            {% for error in form.method.errors %}
-            <p class="validation-error">[{{ error }}]</p>
-            {% endfor %}
-        </div>
-
-        <div class="field">
-            <button type="submit">Create Recipe</button>
-        </div>
-    </form>
+<div>
+    <a href="{{ url_for('recipes.add_recipe')}}">Add a new recipe</a>
 </div>
-
-<br>
-
 <div class="card-deck">
     {% for recipe in recipes %}
     <div class="card text-center">
@@ -45,6 +19,12 @@
                 <a class="card-title"
                     href="{{ url_for('recipes.recipe_detail',title=recipe.title) }}">{{recipe.title}}</a>
             </h4>
+            <form method="get" action="/update_recipe/{{recipe.id}}">
+                <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
+                <div class="field">
+                    <button type='sumit' class="btn btn-warning">Update</button>
+                </div>
+            </form>
             <form action="{{ url_for('recipes.delete_recipe', id=recipe.id) }}" method="post">
                 <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
                 <div class="field">
