@@ -11,12 +11,6 @@ from .forms import RecipeForm, IngredientRecipeForm
 import click
 
 ################################
-# Helper Functions for Form Validation
-################################
-
-#
-
-################################
 # CLI Commands
 # These commands will be accessible via: flask --app runner.py ingredients
 ################################
@@ -185,18 +179,6 @@ def recipe_detail(title):
 def recipe_categories_ingredients(category):
     cat_id = Category.query.filter_by(id=category).first().id
     return jsonify({ing.id: ing.name for ing in Ingredient.query.filter_by(category_id=cat_id).all()})
-
-#Delete an ingredient from a recipe
-@recipes_blueprint.route('/recipes/<string:title>/delete/<int:id>', methods=["GET"])
-def delete_recipe_ingredient(title, id):
-    rec = Recipe.query.filter_by(title=title).first_or_404()
-    rec_ing = rec.ing_recipe
-    rec_ing_row = [ri for ri in rec_ing if ri.ingredient_id == id][0]
-    ing_to_delete = rec_ing_row.ingredient
-    db.session.delete(rec_ing_row)
-    db.session.commit()
-    flash(f'Deleted: {ing_to_delete} from {title}')
-    return redirect(url_for('recipes.recipe_detail',title=title))
 
 #Delete a recipe
 @recipes_blueprint.route('/recipes/delete/<int:id>', methods=['POST'])
