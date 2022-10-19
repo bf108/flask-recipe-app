@@ -33,7 +33,7 @@ class Ingredient(db.Model):
     name = db.Column(db.String, nullable=False, unique=True)
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete="CASCADE"), nullable=False)
     category = db.relationship('Category',back_populates='ingredients', passive_deletes=True)
-    in_recipes = db.relationship("IngredientRecipe", lazy='dynamic', back_populates='ingredients', cascade='all, delete')
+    recipe_ingredients = db.relationship("IngredientRecipe", lazy='dynamic', back_populates='ingredients', cascade='all, delete')
 
     def __init__(self, name: str, category_id: int):
         self.name = name
@@ -55,7 +55,8 @@ class Recipe(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False, unique=True)
     steps = db.relationship('RecipeMethod',lazy=True, back_populates="recipe",cascade='all, delete')
-    ingredients = db.relationship("IngredientRecipe", backref='recipe', lazy=True, passive_deletes=True)
+    ingredients = db.relationship("IngredientRecipe",lazy=True, back_populates='recipe',cascade="all, delete")
+    basket = db.relationship('BasketRecipes', lazy=True, back_populates="recipes", cascade="all, delete")
 
     def __init__(self, title: str):
         self.title = title
@@ -74,7 +75,7 @@ class RecipeMethod(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     step = db.Column(db.String, nullable=False)
     recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id', ondelete="CASCADE"), nullable=False)
-    recipe = db.relationship('Recipe',back_populates='steps', passive_deletes=True)
+    recipe = db.relationship('Recipe',back_populates='steps')
 
     def __init__(self, step: str, recipe_id: int):
         self.step = step
@@ -98,10 +99,10 @@ class IngredientRecipe(db.Model):
     __tablename__ = 'ingredientrecipe'
 
     id = db.Column(db.Integer, primary_key=True)
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable=False)
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id', ondelete="CASCADE"), nullable=False)
+    recipe = db.relationship("Recipe", back_populates="ingredients")
     ingredient_id = db.Column(db.Integer, db.ForeignKey('ingredients.id', ondelete="CASCADE"), nullable=False)
-    #Change to ingredient
-    ingredients = db.relationship('Ingredient', back_populates='in_recipes', passive_deletes=True)
+    ingredients = db.relationship('Ingredient', back_populates='recipe_ingredients')
     quantity = db.Column(db.Float, nullable=False)
     unit = db.Column(db.String, nullable=False)
 
@@ -122,13 +123,30 @@ class Basket(db.Model):
         recipe: (str)
         quantityt: (int)
     """
-
     __tablename__ = 'basket'
 
     id = db.Column(db.Integer, primary_key=True)
-    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id'), nullable=False)
+    title = db.Column(db.String, nullable=False, unique=True)
+    recipes = db.relationship('BasketRecipes', lazy=True, back_populates="basket", cascade="all, delete")
+
+    def __init__(self, title):
+        self.title = title
+
+
+class BasketRecipes(db.Model):
+    __tablename__ = 'basketrecipes'
+
+    id = db.Column(db.Integer, primary_key=True)
+    basket_id = db.Column(db.Integer, db.ForeignKey('basket.id', ondelete='CASCADE'), nullable=False)
+    basket = db.relationship('Basket', lazy=True, back_populates="recipes")
+    recipe_id = db.Column(db.Integer, db.ForeignKey('recipes.id', ondelete="CASCADE"), nullable=False)
+    recipes = db.relationship('Recipe', lazy=True, back_populates="basket")
     quantity = db.Column(db.Integer, nullable=False, default=1)
-    recipe = db.relationship('Recipe', backref='basket')
+
+    def __init__(self, basket_id: int, recipe_id: int, quantity: int):
+        self.basket_id = basket_id
+        self.recipe_id = recipe_id
+        self.quantity = quantity
 
 class User(db.Model):
     """
