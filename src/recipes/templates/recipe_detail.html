@@ -1,18 +1,61 @@
 {% extends "base.html" %}
 
 {% block styling %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/user_profile_style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/form_styles.css') }}">
 {% endblock %}
 
 {% block content %}
-<h1>Recipe Overview</h1>
-
-<div class="card">
-    <div class="card-heading">
-        <h2>{{recipe.title}}</h2>
-    </div>
-    <div class="card-body">
-        <p>Method: {{ recipe.method }}</p>
-    </div>
+<div>
+    <form method="get" action='/update_recipe/{{id}}'>
+        <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
+        <div class="form-group">
+            <label for="recipeTitle">Review Recipe</label>
+            <input type="text" class="form-control" id="recipe_title" name='recipeTitle' value="{{recipe_title}}" </div>
+            <label>Method</label>
+            <div id="method_items">
+                {% for step in steps %}
+                <div class="form-row">
+                    <div class="form-group col-md-11">
+                        <input type="text" class="form-control" readonly="true" id="step1" value="{{step[1]}}"
+                            name='step_{{step[0]}}'>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            <div id="ingredient_items">
+                <div class="form-row">
+                    <div class="col-md-6">
+                        <label for="ingredient">Ingredients</label>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="quantity">Quantity</label>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="units">Units</label>
+                    </div>
+                </div>
+                {% if ingredients %}
+                {% for i in ingredients %}
+                <div class="form-row" id="ingredient{{i['num']}}">
+                    <div class="col-md-6"><input class="form-control" type="text" value="{{i['item']}}" readonly="true"
+                            name="ingredient_{{i['num']}}"></div>
+                    <div class="col-md-2"><input class="form-control" type="number" value="{{i['quantity']}}"
+                            name="ingredient_quantity_{{i['num']}}" readonly="true"></div>
+                    <div class="col-md-3"><input class="form-control" type="text" value="{{i.unit}}"
+                            name="ingredient_unit_{{i['num']}}" readonly="true"></div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+            <br>
+            <br>
+            <div class="field">
+                <button type="submit">Modify Recipe</button>
+            </div>
+    </form>
 </div>
+<script>
+</script>
+
 {% endblock %}

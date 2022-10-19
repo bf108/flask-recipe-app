@@ -132,7 +132,6 @@ class Basket(db.Model):
     def __init__(self, title):
         self.title = title
 
-
 class BasketRecipes(db.Model):
     __tablename__ = 'basketrecipes'
 

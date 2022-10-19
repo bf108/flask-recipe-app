@@ -6,6 +6,7 @@ from pydantic import BaseModel, validator, ValidationError
 from src.models import Ingredient, Category, Recipe, IngredientRecipe, RecipeMethod
 from src import database as db
 from sqlalchemy.exc import IntegrityError
+from flask_login import login_user, current_user, login_required, logout_user
 from . import recipes_blueprint
 from .forms import RecipeForm, IngredientRecipeForm
 import click
@@ -89,6 +90,7 @@ def create_new_recipe(db, recipe_title, steps, ingredients_list, update=False):
 # Blueprints
 ################################
 @recipes_blueprint.route('/add_recipe', methods=["GET",'POST'])
+@login_required
 def add_recipe():
     if request.method == 'POST':
         recipe_title, steps, ingredients_list = extract_recipe_details_from_form(request)
@@ -97,6 +99,7 @@ def add_recipe():
         return render_template('recipe_create.html')
 
 @recipes_blueprint.route('/update_recipe/<int:id>', methods=["GET",'POST'])
+@login_required
 def update_recipe(id):
     if request.method == 'POST':
         recipe_title, steps, ingredients_list = extract_recipe_details_from_form(request)
@@ -122,6 +125,7 @@ def update_recipe(id):
         return render_template('recipe_create.html', recipe_title=recipe_title, steps=steps, ingredients=ingredients_list, units=units_selector, update=True, id=id)
 
 @recipes_blueprint.route('/recipes', methods=["GET",'POST'])
+@login_required
 def list_recipes():
     form = RecipeForm()
     if request.method == 'POST':
@@ -145,35 +149,22 @@ def list_recipes():
     return render_template('recipe_list.html',
                             recipes=recipes, form=form)
 
-@recipes_blueprint.route('/recipes/<string:title>', methods=["GET",'POST'])
-def recipe_detail(title):
-    title = title.title()
-    form = IngredientRecipeForm()
-    recipe_item = Recipe.query.filter_by(title=title).first_or_404()
-    list_ingredients = recipe_item.ing_recipe
-    table_list = []
-    for item in list_ingredients:
-        tmp_ing = Ingredient.query.filter_by(id=item.ingredient_id).first_or_404()
-        table_list.append({
-        'ingredient':tmp_ing,
-        'quantity':item.quantity,
-        'unit':item.unit
+@recipes_blueprint.route('/recipes/<int:id>', methods=["GET"])
+@login_required
+def recipe_detail(id):
+    rec_to_view = Recipe.query.filter_by(id=id).first()
+    recipe_title = rec_to_view.title
+    steps = [(i+1,s.step) for i, s in enumerate(rec_to_view.steps)]
+    ingredients_list = []
+    for k, i in enumerate(rec_to_view.ingredients):
+        ingredients_list.append(
+        {'item': i.ingredients.name,
+        'quantity':i.quantity,
+        'unit': i.unit,
+        'num': k
         })
-
-    if request.method == 'POST':
-        new_ing_recipe_row = IngredientRecipe(
-            recipe_id=recipe_item.id,
-            ingredient_id=form.ingredient_id.data,
-            quantity=form.quantity.data,
-            unit = form.unit.data
-        )
-        db.session.add(new_ing_recipe_row)
-        db.session.commit()
-        new_ing = Ingredient.query.filter_by(id=new_ing_recipe_row.ingredient_id).first_or_404()
-        flash(f'Added new ingredient: {new_ing.name} to {title}','success')
-        return redirect(url_for('recipes.recipe_detail',title=title))
     
-    return render_template('recipe_fill.html', recipe=recipe_item, form=form, table_list=table_list)
+    return render_template('recipe_detail.html', recipe_title=recipe_title, steps=steps, ingredients=ingredients_list, units=units_selector, update=True, id=id)
 
 # Route to serve up ingredients for js
 @recipes_blueprint.route('/<int:category>/ingredients', methods=["GET"])

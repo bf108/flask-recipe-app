@@ -16,8 +16,7 @@
         <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
         <div class="card-body">
             <h4 class="card-title">
-                <a class="card-title"
-                    href="{{ url_for('recipes.recipe_detail',title=recipe.title) }}">{{recipe.title}}</a>
+                <a class="card-title" href="{{ url_for('recipes.recipe_detail',id=recipe.id) }}">{{recipe.title}}</a>
             </h4>
             <form method="get" action="/update_recipe/{{recipe.id}}">
                 <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
