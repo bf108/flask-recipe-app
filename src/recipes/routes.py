@@ -17,6 +17,7 @@ import click
 
 # Dummy items to show before DB is created
 units_options = ['n/a', 'g', 'ml', 'tsp', 'tbsp', 'cup', 'fl oz', 'pint', 'ounce', 'lb']
+units_mappings = {i:u for i,u in enumerate(units_options)}
 units_selector = [(str(i),u) for i, u in enumerate(units_options)]
 
 def extract_recipe_details_from_form(request):
@@ -32,7 +33,7 @@ def extract_recipe_details_from_form(request):
             if 'step' in k:
                 steps[num] = request.form[k]
             elif 'unit' in k:
-                units[num] = request.form[k]
+                units[num] = units_mappings[int(request.form[k])]
             elif 'quantity' in k:
                 qtys[num] = request.form[k]
             elif 'ingredient' in k:

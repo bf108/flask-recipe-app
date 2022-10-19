@@ -88,7 +88,7 @@
                     <div class="col-md-3"><select class="form-control" id="inputUnit"
                             name="ingredient_unit_{{i['num']}}">
                             {% for u in units %}
-                            {% if u[0] == i['unit'] %}
+                            {% if u[1] == i['unit'] %}
                             <option selected="true" value="{{u[0]}}">{{u[1]}}</option>
                             {% else %}
                             <option value="{{u[0]}}">{{u[1]}}</option>
