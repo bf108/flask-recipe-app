@@ -8,7 +8,7 @@
 {% block content %}
 
 <div class="form-wrap">
-    <h1>Create Recipes</h1>
+    <h1>Add Recipes to Basket</h1>
 
     <form method="post">
         {{ form.csrf_token }}
@@ -49,14 +49,14 @@
         <div class="card-body">
             <h4 class="card-title">
                 <a class="card-title"
-                    href="{{ url_for('recipes.recipe_detail',title=item.recipe.title) }}">{{item.recipe.title}}</a>
+                    href="{{ url_for('recipes.recipe_detail',title=item.recipes.title) }}">{{item.recipes.title}}</a>
                 <br><small>Qty: {{item.quantity}}</small>
             </h4>
-            <form action="{{ url_for('baskets.delete_basket_recipe', id=item.recipe.id) }}" method="post">
+            <form action="{{ url_for('baskets.delete_basket_recipe', id=item.recipe_id) }}" method="post">
                 <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
                 <div class="field">
                     <button
-                        onclick="return confirm('Are you sure you want to remove {{ item.recipe.title }} from the basket?')"
+                        onclick="return confirm('Are you sure you want to remove {{ item.recipes.title }} from the basket?')"
                         class="btn btn-danger">Delete</button>
                 </div>
             </form>
