@@ -20,11 +20,13 @@ def aggregate_ingredients(basket):
     agg_ingredients_dict = {}
     for basket_recipe in basket.recipes:
         recipe_title = basket_recipe.recipes.title
+        multiplier = basket_recipe.quantity
         for ing in basket_recipe.recipes.ingredients:
             item_name = ing.ingredients.name
             item_category = ing.ingredients.category.category
             item_id = ing.ingredient_id
-            item_qty = ing.quantity
+            #Account for recipe being selected multiple times
+            item_qty = ing.quantity * multiplier
             item_unit = ing.unit
             item_metric = uc.metric_conversion(item_qty, item_unit)
 
