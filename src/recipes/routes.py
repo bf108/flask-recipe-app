@@ -173,7 +173,7 @@ def recipe_categories_ingredients(category):
     return jsonify({ing.id: ing.name for ing in Ingredient.query.filter_by(category_id=cat_id).all()})
 
 #Delete a recipe
-@recipes_blueprint.route('/recipes/delete/<int:id>', methods=['POST'])
+@recipes_blueprint.route('/recipes/delete/<int:id>', methods=['GET'])
 def delete_recipe(id):
     rec_to_delete = Recipe.query.filter_by(id=id).first_or_404()
     db.session.delete(rec_to_delete)
