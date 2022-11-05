@@ -2,13 +2,13 @@
  **************/
 
  form {
-    padding: 60px;
+    padding: 20px;
     background: white;
   }
   
   .form-wrap {
     margin: 0 auto;
-    max-width: 500px;
+    max-width: 1000px;
   }
   
   input,

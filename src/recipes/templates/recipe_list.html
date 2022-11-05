@@ -1,8 +1,8 @@
 {% extends "base.html" %}
 
 {% block styling %}
-<link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/form_styles.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/index_style.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -22,16 +22,23 @@
         </div>
     </center>
 </div> -->
-<form class="form-inline" method="get" action="{{ url_for('recipes.add_recipe')}}">
-    <div class="col text-center">
-        <button type="submit" class="btn-lg btn-primary mb-2">Add New Recipe</button>
-    </div>
-</form>
-<div>
+<div class="form-wrap">
+    <form method="get" action="{{ url_for('recipes.add_recipe')}}">
+        <div class="col text-center">
+            <button type="submit" class="btn-lg btn-primary mb-2">Add New Recipe</button>
+        </div>
+    </form>
+</div>
+<br>
+<div class="form-wrap">
     <form>
+        <h3>
+            Search Existing Recipes
+        </h3>
         <input type="text" id="search_bar" placeholder="Search recipes">
     </form>
 </div>
+<br>
 <div class="card-deck">
     {% for recipe in recipes %}
     <div class="card text-center">

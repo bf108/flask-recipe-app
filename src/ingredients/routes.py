@@ -74,7 +74,7 @@ def get_list_ingredients():
 
 def get_category_drop_list():
     #Simple helper function to create list of tuples (int, str)#
-    return [(c.id, c.category) for c in Category.query.order_by(Category.id).all()]
+    return sorted([(c.id, c.category) for c in Category.query.order_by(Category.id).all()], key=lambda x: x[1])
 
 def get_list_categories():
     #Helper function to return list of categories
