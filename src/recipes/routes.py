@@ -124,7 +124,7 @@ def update_recipe(id):
         
         return render_template('recipe_create.html', recipe_title=recipe_title, steps=steps, ingredients=ingredients_list, units=units_selector, update=True, id=id)
 
-@recipes_blueprint.route('/recipes', methods=["GET",'POST'])
+@recipes_blueprint.route('/', methods=["GET",'POST'])
 @login_required
 def list_recipes():
     form = RecipeForm()

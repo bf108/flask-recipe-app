@@ -7,6 +7,7 @@ from src.models import Ingredient, Category
 from src import database
 from . import ingredients_blueprint
 import click
+from flask_login import login_user, current_user, login_required, logout_user
 
 ################################
 # Helper Functions for Form Validation
@@ -152,10 +153,6 @@ def create_ingredient(name, category_id):
 ################################
 # Blueprints
 ################################
-@ingredients_blueprint.route('/')
-def home():
-    return "Hello World"
-
 @ingredients_blueprint.route('/items', methods=["GET",'POST'])
 def list_items():
     if request.method == 'POST':
