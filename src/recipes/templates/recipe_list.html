@@ -6,7 +6,10 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid">
+<div class="text-center">
+    Welcome to the Recipe App
+</div>
+<!-- <div class="container-fluid">
     <center>
         <div class="card bg-dark text-white">
             <img class="card-img-top" src="{{ url_for('static', filename='img/food.jpeg') }}" alt="various foods"
@@ -18,12 +21,17 @@
             </div>
         </div>
     </center>
-</div>
+</div> -->
 <form class="form-inline" method="get" action="{{ url_for('recipes.add_recipe')}}">
     <div class="col text-center">
         <button type="submit" class="btn-lg btn-primary mb-2">Add New Recipe</button>
     </div>
 </form>
+<div>
+    <form>
+        <input type="text" id="search_bar" placeholder="Search recipes">
+    </form>
+</div>
 <div class="card-deck">
     {% for recipe in recipes %}
     <div class="card text-center">
@@ -46,6 +54,20 @@
             window.location.href = `/recipes/delete/${id}`
         }
     }
+</script>
+<script>
+    //Add script for dynamic search bar - cards on page filtered to text content
+    const searchInput = document.getElementById('search_bar')
+    const cardItems = document.getElementsByClassName('card')
+    //add event listner to search_bar to 
+    searchInput.addEventListener('input', (e) => {
+        Object.keys(cardItems).forEach(key => {
+            const cardTitle = cardItems[key].getElementsByTagName('h4')[0].textContent.toLowerCase()
+            const isVisible = cardTitle.includes(e.target.value.toLowerCase())
+            cardItems[key].classList.toggle('hide', !isVisible)
+        })
+    })
+
 </script>
 
 {% endblock %}
