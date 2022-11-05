@@ -6,6 +6,18 @@
 {% endblock %}
 
 {% block content %}
+<div class="container-fluid">
+    <center>
+        <div class="card bg-dark text-white">
+            <img class="card-img-top" src="{{ url_for('static', filename='img/food.jpeg') }}" alt="various foods">
+            <div class="card-img-overlay">
+                <h1 class="card-title display-1 text-light bg-dark" style="opacity: .8">
+                    Welcome to the Recipe App
+                </h1>
+            </div>
+        </div>
+    </center>
+</div>
 
 <div>
     <a href="{{ url_for('recipes.add_recipe')}}">Add a new recipe</a>
