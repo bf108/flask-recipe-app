@@ -29,7 +29,9 @@
 <div class="card-deck">
     {% for item in category_list %}
     <div class="card">
-        <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Food Category Type">
+        <img class="card-img-top" src="{{ url_for('static', filename='img/{}'.format(item.img_url)) }}"
+            alt="Food Category Type: {{item.name}}">
+        <!-- <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Food Category Type"> -->
         <div class="card-body">
             <h5 h5 class="card-title">{{item}}</h5>
             <button type="button" onclick="confirmDelete( '{{ item }}', '{{ item.id }}' )"

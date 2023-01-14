@@ -8,6 +8,8 @@ from src import database
 from . import ingredients_blueprint
 import click
 from flask_login import login_user, current_user, login_required, logout_user
+import json
+import os
 
 ################################
 # Helper Functions for Form Validation
@@ -70,7 +72,7 @@ def check_category_duplicate(new_input_category):
 
 def get_list_ingredients():
     #Helper function to return list of ingredients
-    return Ingredient.query.order_by(Ingredient.id).all()
+    return Ingredient.query.order_by(Ingredient.name).all()
 
 def get_category_drop_list():
     #Simple helper function to create list of tuples (int, str)#
@@ -136,7 +138,7 @@ def create_default_ingredients():
     for k, cat_ingredients in food_groups.items():
         cat_id = Category.query.filter_by(category=k).first().id
         for i in cat_ingredients:
-            ingredients_.append(Ingredient(name=i, category_id=cat_id))
+            ingredients_.append(Ingredient(name=i, category_id=cat_id, category_name=k))
     for c in ingredients_:
         database.session.add(c)
     database.session.commit()
@@ -144,9 +146,9 @@ def create_default_ingredients():
 @ingredients_blueprint.cli.command('create_ingredient')
 @click.argument('name')
 @click.argument('category_id')
-def create_ingredient(name, category_id):
+def create_ingredient(name, category_id, category_name):
     #Create a new ingredient from CLI
-    new_ingredient = Ingredient(name, category_id)
+    new_ingredient = Ingredient(name, category_id, category_name)
     database.session.add(new_ingredient)
     database.session.commit()
 
@@ -158,10 +160,12 @@ def list_items():
     if request.method == 'POST':
         current_list_ingredients = [ing.name for ing in get_list_ingredients()]
         try:
+            category_name = Category.query.filter_by(id=request.form.get('category')).first().category
             new_item_data = ItemModel(existing = current_list_ingredients,
                                       item = request.form.get('item'),
-                                      category = request.form.get('category'))
-            new_ingredient = Ingredient(new_item_data.item, new_item_data.category)
+                                      category = request.form.get('category')
+                                      )
+            new_ingredient = Ingredient(new_item_data.item, new_item_data.category, category_name)
             database.session.add(new_ingredient)
             database.session.commit()
             flash(f"{new_ingredient.name} added to ingredient list in DB!", 'Success')

@@ -12,7 +12,7 @@
     <h1>
         Add a new Ingredient:
     </h1>
-    <form action="post" class="form-row align-items-center">
+    <form method="POST" class="form-row align-items-center">
         <div class="col-4">
             <div class="field">
                 <label for="item">Item: <em>(required)</em></label>
@@ -24,7 +24,7 @@
             </div>
         </div>
     </form>
-    <form action="post" class="form-row align-items-center">
+    <form method="POST" class="form-row align-items-center">
         <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
         <div class="col-4">
             <div class="field">
@@ -43,7 +43,7 @@
         <div class="col-2">
             <div class="field">
                 <label></label>
-                <button class='btn' type="submit">Submit</button>
+                <button type="submit" class='btn'>Submit</button>
             </div>
         </div>
     </form>
@@ -60,9 +60,11 @@
 <div class="card-deck">
     {% for item in items %}
     <div class="card">
-        <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
+        <img class="card-img-top" src="{{ url_for('static', filename='img/{}'.format(item.img_url)) }}"
+            alt="{{item.name}}">
         <div class="card-body">
             <h5 h5 class="card-title">{{item}}</h5>
+            <button type="button" class="btn btn-warning btn-sm"><a href="items/update/{{ item.id }}">Update</a></button>
             <button type="button" onclick="confirmDelete( '{{ item }}', '{{ item.id }}' )"
                 class="btn btn-danger btn-sm">Delete</button>
         </div>
@@ -74,6 +76,12 @@
         var check = confirm(`Are you sure you want to delete ${title}`)
         if (check) {
             window.location.href = `/items/delete/${id}`
+        }
+    }
+</script>
+<script>
+    const updateIngredient = function (id) {
+        window.location.href = `/items/update/${id}`
         }
     }
 </script>
