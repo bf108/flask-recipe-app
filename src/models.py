@@ -46,12 +46,15 @@ class Ingredient(db.Model):
     recipe_ingredients = db.relationship("IngredientRecipe", lazy='dynamic', back_populates='ingredients', cascade='all, delete')
 
 
-    def __init__(self, name: str, category_id: int, category_name: str):
+    def __init__(self, name: str, category_id: int, category_name: str, img_url: str=None):
         self.name = name
         self.category_id = category_id
-        output = create_save_img(name, [f'food category {category_name}'])
-        if output:
-            self.img_url = output
+        if img_url == None:
+            output = create_save_img(name, [f'food category {category_name}'])
+            if output:
+                self.img_url = output
+        else:
+            self.img_url = img_url
     
     def __repr__(self):
         return f"{self.name.title()}"
