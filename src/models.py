@@ -18,13 +18,13 @@ class Category(db.Model):
 
     def __init__(self, category: str):
         self.category = category
-        if category in ['Other','General','Generic','other','general','generic']:
-            print(category)
-            pass
-        else:
-            output = create_save_img(category, ['food category'])
-            if output:
-                self.img_url = output
+        # if category in ['Other','General','Generic','other','general','generic']:
+        #     print(category)
+        #     pass
+        # else:
+        #     output = create_save_img(category, ['food category'])
+        #     if output:
+        #         self.img_url = output
     
     def __repr__(self):
         return f"{self.category.title()}"
@@ -49,12 +49,12 @@ class Ingredient(db.Model):
     def __init__(self, name: str, category_id: int, category_name: str, img_url: str=None):
         self.name = name
         self.category_id = category_id
-        if img_url == None:
-            output = create_save_img(name, [f'food category {category_name}'])
-            if output:
-                self.img_url = output
-        else:
-            self.img_url = img_url
+        # if img_url == None:
+        #     output = create_save_img(name, [f'food category {category_name}'])
+        #     if output:
+        #         self.img_url = output
+        # else:
+        #     self.img_url = img_url
     
     def __repr__(self):
         return f"{self.name.title()}"
