@@ -1,5 +1,6 @@
 from src import database as db
 from werkzeug.security import generate_password_hash, check_password_hash
+from test_openai import create_save_img
 
 class Category(db.Model):
     """
@@ -12,10 +13,18 @@ class Category(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     category = db.Column(db.String, nullable=False)
+    img_url = db.Column(db.String, default='default.png')
     ingredients = db.relationship('Ingredient',lazy='dynamic', back_populates="category",cascade='all, delete')
 
     def __init__(self, category: str):
         self.category = category
+        if category in ['Other','General','Generic','other','general','generic']:
+            print(category)
+            pass
+        else:
+            output = create_save_img(category, ['food category'])
+            if output:
+                self.img_url = output
     
     def __repr__(self):
         return f"{self.category.title()}"
@@ -31,14 +40,18 @@ class Ingredient(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String, nullable=False, unique=True)
+    img_url = db.Column(db.String, default='default.png')
     category_id = db.Column(db.Integer, db.ForeignKey('categories.id', ondelete="CASCADE"), nullable=False)
     category = db.relationship('Category',back_populates='ingredients', passive_deletes=True)
     recipe_ingredients = db.relationship("IngredientRecipe", lazy='dynamic', back_populates='ingredients', cascade='all, delete')
 
-    def __init__(self, name: str, category_id: int):
+
+    def __init__(self, name: str, category_id: int, category_name: str):
         self.name = name
-        # self.category = category
         self.category_id = category_id
+        output = create_save_img(name, [f'food category {category_name}'])
+        if output:
+            self.img_url = output
     
     def __repr__(self):
         return f"{self.name.title()}"
