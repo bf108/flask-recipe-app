@@ -64,9 +64,18 @@ def extract_recipe_details_from_form(request):
 def add_new_ingredient_to_db(ingredient_list: List[Dict]):
     for d in ingredient_list:
         tmp_item = d['item']
-        if not Ingredient.query.filter_by(name=tmp_item):
-            pass
+        #If Ingredient doesn't exist in db, then add ingredient as Category: Other
+        if not check_ingredient_exist_in_db(tmp_item):
+            other_cat = Category.query.filter_by(category='other').first()
+            new_ing = Ingredient(tmp_item, other_cat.id, other_cat.category)
+            db.session.add(new_ing)
+            flash(f'Added {tmp_item} to ingredient db','success')
             
+def check_ingredient_exist_in_db(ingredient: str) -> bool:
+    if not Ingredient.query.filter_by(name=ingredient).first():
+        return False
+    return True
+
 
 def create_new_recipe(db, recipe_title, steps, ingredients_list, update=False, recipe_servings="2 people", recipe_prep='30mins', recipe_cook='60mins'):
     try:
@@ -81,12 +90,15 @@ def create_new_recipe(db, recipe_title, steps, ingredients_list, update=False, r
             db.session.add(new_step)
         db.session.commit()
         print(f'Added recipe steps')
+        #Add any missing ingredients to db
+        add_new_ingredient_to_db(ingredients_list)
         #Add ingredients
         for i in ingredients_list:
             ing_id = Ingredient.query.filter_by(name=i['item']).first().id
+            qty = 1 if i['quantity'] == '' else i['quantity']
             new_ing_rec = IngredientRecipe(recipe_id=recipe_id,
                                             ingredient_id=ing_id,
-                                            quantity=i['quantity'],
+                                            quantity=qty,
                                             unit=i['unit'])
             db.session.add(new_ing_rec)
         db.session.commit()
@@ -192,9 +204,13 @@ def list_recipes():
             flash('Valid URL','success')
             scraped_rec = collect_entire_recipe_from_url(bbc_form.url.data)
             title = scraped_rec['title']
+            serving_portions = scraped_rec['serving_portions']
+            cooking_time = scraped_rec['cooking_time']
+            prep_time = scraped_rec['prep_time']
             steps = [(k,v) for k, v in scraped_rec['method'].items()]
             ingredients_list = scraped_rec['ingredients']
-            return create_new_recipe(db, title, steps, ingredients_list)
+            return create_new_recipe(db, title, steps, ingredients_list, update=True,
+            recipe_servings=serving_portions, recipe_prep=prep_time, recipe_cook=cooking_time)
             # return redirect(url_for('recipes.list_recipes'))
         else:
             flash(f'Error with URL {bbc_form.url.data}','error')
