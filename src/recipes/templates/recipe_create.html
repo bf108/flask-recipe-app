@@ -19,12 +19,34 @@
                 {% else %}
                 <label for="recipeTitle">Update Recipe</label>
                 {% endif %}
+                <label>Title:</label>
                 {% if recipe_title %}
                 <input type="text" class="form-control" id="recipe_title" name='recipeTitle' value="{{recipe_title}}"
                     required>
                 {% else %}
                 <input type="text" class="form-control" id="recipe_title" name='recipeTitle' placeholder="Recipe Title"
                     required>
+                {% endif %}
+                <label>Portions:</label>
+                {% if recipe_servings %}
+                <input type="text" class="form-control" id="recipe_servings" name='recipeServings' value="{{recipe_servings}}"
+                    required>
+                {% else %}
+                <input type="text" class="form-control" id="recipe_servings" name='recipeServings' placeholder="Recipe Servings" required>
+                {% endif %}
+                <label>Preperation Time:</label>
+                {% if recipe_prep %}
+                <input type="text" class="form-control" id="recipe_prep" name='recipePrep' value="{{recipe_prep}}"
+                    required>
+                {% else %}
+                <input type="text" class="form-control" id="recipe_prep" name='recipePrep' placeholder="Recipe Prep Time" required>
+                {% endif %}
+                <label>Cooking Time:</label>
+                {% if recipe_cook %}
+                <input type="text" class="form-control" id="recipe_cook" name='recipeCook' value="{{recipe_cook}}"
+                    required>
+                {% else %}
+                <input type="text" class="form-control" id="recipe_cook" name='recipeCook' placeholder="Recipe Cooking Time" required>
                 {% endif %}
             </div>
             <label>Method</label>
@@ -66,6 +88,7 @@
                 </div>
                 <button type="button" class="btn btn-primary" id="addInput">Add</button>
             </div>
+            <br>
             <div id="ingredient_items">
                 <div class="form-row">
                     <div class="col-md-6">
@@ -112,7 +135,8 @@
         </form>
 </div>
 <script>
-    const units = ['n/a', 'g', 'ml', 'tsp', 'tbsp', 'cup', 'fl oz', 'pint', 'ounce', 'lb']
+    const units = ['n/a', 'g', 'ml', 'cm', 'litre', 'tsp', 'tbsp', 'cup', 'fl oz', 'pint', 'ounce', 'lb', 'oz', 'inch', 'glass']
+    //const units = ['n/a', 'g', 'ml', 'tsp', 'tbsp', 'cup', 'fl oz', 'pint', 'ounce', 'lb']
 
     createFormDivCol = function (cols) {
         const newDiv = document.createElement('div')

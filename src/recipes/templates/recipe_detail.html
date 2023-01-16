@@ -11,7 +11,27 @@
         <input type="hidden" , name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="recipeTitle">Review Recipe</label>
-            <input type="text" class="form-control" id="recipe_title" name='recipeTitle' value="{{recipe_title}}" </div>
+            <!-- <input type="text" class="form-control" id="recipe_title" name='recipeTitle' value="{{recipe_title}}"> 
+            <input type="text" class="form-control" id="recipe_servings" name='recipeServings' value="{{recipe_servings}}"> 
+            <input type="text" class="form-control" id="recipe_prep" name='recipePrep' value="{{recipe_prep}}"> 
+            <input type="text" class="form-control" id="recipe_cook" name='recipeCook' value="{{recipe_cook}}">  -->
+        </div>
+        <div class="form-group form-inline">
+            <label for="recipe_title">Title: </label>
+            <input type="text" class="form-control" id="recipe_title" name='recipeTitle' value="{{recipe_title}}"> 
+        </div>
+        <div class="form-group form-inline">
+            <label for="recipe_servings">Portions: </label>
+            <input type="text" class="form-control" id="recipe_servings" name='recipeServings' value="{{recipe_servings}}"> 
+        </div>
+        <div class="form-group form-inline">
+            <label for="recipe_prep">Prep Time</label>
+            <input type="text" class="form-control" id="recipe_prep" name='recipePrep' value="{{recipe_prep}}"> 
+        </div>
+        <div class="form-group form-inline">
+            <label for="recipe_cook">Cooking Time</label>
+            <input type="text" class="form-control" id="recipe_cook" name='recipeCook' value="{{recipe_cook}}"> 
+        </div>
             <label>Method</label>
             <div id="method_items">
                 {% for step in steps %}
