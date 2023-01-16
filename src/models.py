@@ -70,12 +70,18 @@ class Recipe(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String, nullable=False, unique=True)
+    servings = db.Column(db.String, nullable=False, unique=False, default='Serves 2')
+    prep_time = db.Column(db.String, nullable=False, unique=False, default='30mins')
+    cooking_time = db.Column(db.String, nullable=False, unique=False, default='60mins')
     steps = db.relationship('RecipeMethod',lazy=True, back_populates="recipe",cascade='all, delete')
     ingredients = db.relationship("IngredientRecipe",lazy=True, back_populates='recipe',cascade="all, delete")
     basket = db.relationship('BasketRecipes', lazy=True, back_populates="recipes", cascade="all, delete")
 
-    def __init__(self, title: str):
+    def __init__(self, title: str, servings: str, prep_time: str, cooking_time: str):
         self.title = title
+        self.servings = servings
+        self.prep_time = prep_time
+        self.cooking_time = cooking_time
     
     def __repr__(self):
         return f"{self.title}"
