@@ -70,54 +70,60 @@ def add_new_ingredient_to_db(ingredient_list: List[Dict]):
             new_ing = Ingredient(tmp_item, other_cat.id, other_cat.category)
             db.session.add(new_ing)
             flash(f'Added {tmp_item} to ingredient db','success')
-            
+
+
 def check_ingredient_exist_in_db(ingredient: str) -> bool:
     if not Ingredient.query.filter_by(name=ingredient).first():
         return False
     return True
 
 
-def create_new_recipe(db, recipe_title, steps, ingredients_list, update=False, recipe_servings="2 people", recipe_prep='30mins', recipe_cook='60mins'):
-    try:
-        new_rec = Recipe(title=recipe_title, servings=recipe_servings, prep_time=recipe_prep, cooking_time=recipe_cook)
-        db.session.add(new_rec)
-        print(f'Added recipe: {new_rec.title}')
-        db.session.commit()
-        #Add recipe steps
-        recipe_id = Recipe.query.filter_by(title=new_rec.title).first().id
-        for s in steps:
-            new_step = RecipeMethod(step=s[1], recipe_id=recipe_id)
-            db.session.add(new_step)
-        db.session.commit()
-        print(f'Added recipe steps')
-        #Add any missing ingredients to db
-        add_new_ingredient_to_db(ingredients_list)
-        #Add ingredients
-        for i in ingredients_list:
-            ing_id = Ingredient.query.filter_by(name=i['item']).first().id
-            qty = 1 if i['quantity'] == '' else i['quantity']
-            new_ing_rec = IngredientRecipe(recipe_id=recipe_id,
-                                            ingredient_id=ing_id,
-                                            quantity=qty,
-                                            unit=i['unit'])
-            db.session.add(new_ing_rec)
-        db.session.commit()
-        print(f'Added recipe ingredients')
-        if update:
-            flash(f"Updated recipe: {recipe_title}. Steps: {len(steps)}. Ingredients: {len(ingredients_list)}")
-        else:
-            flash(f"Created recipe: {recipe_title}. Steps: {len(steps)}. Ingredients: {len(ingredients_list)}")
-        recipes = Recipe.query.order_by(Recipe.title).all()
-        # return render_template('recipe_list.html', recipes=recipes)
-        return redirect(url_for('recipes.list_recipes'))
+def create_new_recipe(db, recipe_title, steps, ingredients_list, update=False, 
+    recipe_servings="2 people", recipe_prep='30mins', recipe_cook='60mins', photo_url=None):
+    # try:
+    if photo_url:
+        new_rec = Recipe(title=recipe_title, servings=recipe_servings,prep_time=recipe_prep, cooking_time=recipe_cook, img_url=photo_url)
+    else:
+        new_rec = Recipe(title=recipe_title, servings=recipe_servings, 
+                            prep_time=recipe_prep, cooking_time=recipe_cook)
+    db.session.add(new_rec)
+    print(f'Added recipe: {new_rec.title}')
+    db.session.commit()
+    #Add recipe steps
+    recipe_id = Recipe.query.filter_by(title=new_rec.title).first().id
+    for s in steps:
+        new_step = RecipeMethod(step=s[1], recipe_id=recipe_id)
+        db.session.add(new_step)
+    db.session.commit()
+    print(f'Added recipe steps')
+    #Add any missing ingredients to db
+    add_new_ingredient_to_db(ingredients_list)
+    #Add ingredients
+    for i in ingredients_list:
+        ing_id = Ingredient.query.filter_by(name=i['item']).first().id
+        qty = 1 if i['quantity'] == '' else i['quantity']
+        new_ing_rec = IngredientRecipe(recipe_id=recipe_id,
+                                        ingredient_id=ing_id,
+                                        quantity=qty,
+                                        unit=i['unit'])
+        db.session.add(new_ing_rec)
+    db.session.commit()
+    print(f'Added recipe ingredients')
+    if update:
+        flash(f"Updated recipe: {recipe_title}. Steps: {len(steps)}. Ingredients: {len(ingredients_list)}")
+    else:
+        flash(f"Created recipe: {recipe_title}. Steps: {len(steps)}. Ingredients: {len(ingredients_list)}")
+    recipes = Recipe.query.order_by(Recipe.title).all()
+    # return render_template('recipe_list.html', recipes=recipes)
+    return redirect(url_for('recipes.list_recipes'))
 
-    except Exception as e:
-        print(e)
-        db.session.rollback()
-        flash(f"Recipe already exists",'error')
-        return render_template('recipe_create.html', recipe_title=recipe_title, steps=steps, 
-        ingredients=ingredients_list, units=units_selector, update=update, 
-        recipeServings=recipe_servings, recipePrep=recipe_prep, recipeCook=recipe_cook)
+    # except Exception as e:
+    #     print(e)
+    #     db.session.rollback()
+    #     flash(f"Recipe already exists",'error')
+    #     return render_template('recipe_create.html', recipe_title=recipe_title, steps=steps, 
+    #     ingredients=ingredients_list, units=units_selector, update=update, 
+    #     recipeServings=recipe_servings, recipePrep=recipe_prep, recipeCook=recipe_cook)
 
 ################################
 # Blueprints
@@ -159,40 +165,6 @@ def update_recipe(id):
         
         return render_template('recipe_create.html', recipe_title=recipe_title, steps=steps, ingredients=ingredients_list, units=units_selector, update=True, id=id, recipe_servings=recipe_servings, recipe_cook=recipe_cook, recipe_prep=recipe_prep)
 
-@recipes_blueprint.route('/add_recipe_from_bbc', methods=['GET','POST'])
-@login_required
-def add_recipe_bbc():
-    print(request.method)
-    print(request)
-    flash('successfully redirected after posting url')
-    return redirect(url_for('recipes.list_recipes'))
-
-# @recipes_blueprint.route('/', methods=["GET",'POST'])
-# @login_required
-# def list_recipes():
-#     form = RecipeForm()
-#     bbc_form = BBCUrlForm()
-#     if request.method == 'POST':
-#         # current_list_ingredients = [ing.name for ing in get_list_ingredients()]
-#         try:
-#             # new_item_data = ItemModel(existing = current_list_ingredients,
-#             #                           item = request.form['item'],
-#             #                           category = request.form['category'])
-#             new_recipe = Recipe(
-#                 title=form.title.data,
-#                 method=form.method.data)
-#             db.session.add(new_recipe)
-#             db.session.commit()
-#             flash(f'Added {new_recipe.title}','success')
-#             current_app.logger.info(f'Create new recipe: {new_recipe.title}')
-#             return redirect(url_for('recipes.list_recipes'))
-#         except IntegrityError:
-#             db.session.rollback()
-#             flash('Error creating recipe','error')
-#     recipes = Recipe.query.order_by(Recipe.id).all()
-#     return render_template('recipe_list.html',
-#                             recipes=recipes, form=form, bbc_form=bbc_form)
-
 @recipes_blueprint.route('/', methods=["GET",'POST'])
 @login_required
 def list_recipes():
@@ -201,17 +173,17 @@ def list_recipes():
     recipes = Recipe.query.order_by(Recipe.id).all()
     if request.method == 'POST':
         if bbc_form.validate_on_submit():
-            flash('Valid URL','success')
             scraped_rec = collect_entire_recipe_from_url(bbc_form.url.data)
             title = scraped_rec['title']
             serving_portions = scraped_rec['serving_portions']
             cooking_time = scraped_rec['cooking_time']
             prep_time = scraped_rec['prep_time']
+            photo_url = scraped_rec['photo_url']
             steps = [(k,v) for k, v in scraped_rec['method'].items()]
             ingredients_list = scraped_rec['ingredients']
             return create_new_recipe(db, title, steps, ingredients_list, update=True,
-            recipe_servings=serving_portions, recipe_prep=prep_time, recipe_cook=cooking_time)
-            # return redirect(url_for('recipes.list_recipes'))
+                            recipe_servings=serving_portions, recipe_prep=prep_time, 
+                            recipe_cook=cooking_time, photo_url=photo_url)
         else:
             flash(f'Error with URL {bbc_form.url.data}','error')
             return render_template('recipe_list.html',

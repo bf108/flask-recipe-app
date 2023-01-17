@@ -57,7 +57,11 @@
 <div class="card-deck">
     {% for recipe in recipes %}
     <div class="card text-center">
-        <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
+        {% if recipe.img_url == 'img/apples.jpeg' %}
+            <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap">
+        {% else %}
+            <img class="card-img-top" src="{{recipe.img_url}}" alt="Card image cap">
+        {% endif %}
         <div class="card-body">
             <h4 class="card-title">
                 <a class="card-title" href="{{ url_for('recipes.recipe_detail',id=recipe.id) }}">{{recipe.title}}</a>

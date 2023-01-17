@@ -73,15 +73,17 @@ class Recipe(db.Model):
     servings = db.Column(db.String, nullable=False, unique=False, default='Serves 2')
     prep_time = db.Column(db.String, nullable=False, unique=False, default='30mins')
     cooking_time = db.Column(db.String, nullable=False, unique=False, default='60mins')
+    img_url = db.Column(db.String, nullable=False, unique=False, default='img/apples.jpeg')
     steps = db.relationship('RecipeMethod',lazy=True, back_populates="recipe",cascade='all, delete')
     ingredients = db.relationship("IngredientRecipe",lazy=True, back_populates='recipe',cascade="all, delete")
     basket = db.relationship('BasketRecipes', lazy=True, back_populates="recipes", cascade="all, delete")
 
-    def __init__(self, title: str, servings: str, prep_time: str, cooking_time: str):
+    def __init__(self, title: str, servings: str, prep_time: str, cooking_time: str, img_url: str):
         self.title = title
         self.servings = servings
         self.prep_time = prep_time
         self.cooking_time = cooking_time
+        self.img_url = img_url
     
     def __repr__(self):
         return f"{self.title}"
