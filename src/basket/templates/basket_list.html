@@ -43,7 +43,12 @@
 <div class="card-deck">
     {% for item in cbr %}
     <div class="card text-center">
-        <!-- <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap"> -->
+        {% if item.recipes.img_url == 'img/apples.jpeg' %}
+
+            <!-- <img class="card-img-top" src="{{ url_for('static', filename='img/apples.jpeg') }}" alt="Card image cap"> -->
+        {% else %}
+            <img class="card-img-top" src="{{item.recipes.img_url}}" alt="Card image cap">
+        {% endif %}
         <div class="card-body">
             <h4 class="card-title">
                 <a class="card-title"
