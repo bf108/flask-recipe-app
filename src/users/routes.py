@@ -1,5 +1,5 @@
 from . import users_blueprint
-from src.models import User
+from src.models import User, Basket
 from flask import render_template, flash, abort, request, current_app, redirect, url_for, escape
 from .forms import RegistrationForm, LoginForm
 from src import database as db
@@ -19,6 +19,10 @@ def register():
                 db.session.add(new_user)
                 db.session.commit()
                 flash(f'Registered {new_user.email}!','success')
+                if len(Basket.query.order_by('id').all()) == 0:
+                    new_basket = Basket('default_basket')
+                    db.session.add(new_basket)
+                    current_app.logger.info('Created Default Basket')   
                 current_app.logger.info(f'Registered new user: {new_user.email}')
                 return redirect(url_for('ingredients.list_items'))
             except IntegrityError:
