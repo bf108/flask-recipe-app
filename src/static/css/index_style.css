@@ -71,6 +71,11 @@
     display: none !important;
 }
 
+.strike-through {
+    text-decoration: line-through;
+    color: red
+}
+
 /*CSS required for autocomplete*/
 
 .autocomplete {
