@@ -9,6 +9,6 @@ def recipe_choices():
      key=lambda x: x[1])
 
 class BasketForm(FlaskForm):
-    recipe = SelectField('Recipe', validators=[DataRequired()], choices=recipe_choices)
+    # recipe = SelectField('Recipe', validators=[DataRequired()], choices=recipe_choices)
     quantity = IntegerField('Qty',validators=[DataRequired(), NumberRange(min=1)], default=1)
     submit = SubmitField('Include Recipe')
